@@ -1,0 +1,3125 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>AE &amp; DEV WORLD</title>
+
+  <!--
+    ╔══════════════════════════════════════════════════╗
+    ║          AE & DEV WORLD — Project Files          ║
+    ║                                                  ║
+    ║  css/style.css  — all styles                     ║
+    ║  js/app.js      — i18n, state, nav, admin        ║
+    ║  js/quiz.js     — quiz, facts, result             ║
+    ║  js/game.js     — 10 mini-games + touch bridge   ║
+    ║                                                  ║
+    ║  ⚠ Open via Live Server (VS Code) or any         ║
+    ║    local web server — NOT double-click           ║
+    ║    (browsers block JS files over file://)        ║
+    ║                                                  ║
+    ║  Quick start:                                    ║
+    ║    Python: python -m http.server 8080            ║
+    ║    then open http://localhost:8080               ║
+    ╚══════════════════════════════════════════════════╝
+  -->
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+  <style>
+/* =====================================================
+   AE & DEV WORLD — Main Styles
+   style.css
+===================================================== */
+
+
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;min-height:100%;overflow-x:hidden}
+body{font-family:'Orbitron',sans-serif;background:#08080f;color:#fff;position:relative}
+
+/* AE & MATRIX BACKGROUND CANVASES */
+
+/* AE background canvas */
+#aeBg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0;transition:opacity .5s}
+body.theme-ae #aeBg{opacity:1}
+/* MATRIX CANVAS — fixed behind everything */
+#matrixBg{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  z-index:0;pointer-events:none;
+  display:block;
+}
+
+/* SCREENS — above matrix */
+.screen{
+  position:relative;z-index:2;
+  min-height:100vh;
+  display:flex;flex-direction:column;
+  justify-content:center;align-items:center;
+  gap:26px;padding:50px 20px;text-align:center;
+}
+.hidden{display:none!important}
+
+/* GLITCH */
+#glitchOverlay{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0}
+
+@keyframes glShake{0%,100%{transform:translate(0)}20%{transform:translate(-6px,3px) skew(-2deg)}40%{transform:translate(6px,-3px) skew(2deg)}60%{transform:translate(-4px,2px)}80%{transform:translate(4px,-1px)}}
+.shaking{animation:glShake .5s linear}
+
+/* LANG */
+#langBtn{
+  position:fixed;top:16px;left:16px;z-index:20;
+  background:linear-gradient(135deg,#9b5cff,#6e3cff);
+  color:#fff;border:none;padding:10px 16px;border-radius:11px;
+  font-family:'Orbitron',sans-serif;font-weight:700;font-size:11px;
+  cursor:pointer;box-shadow:0 0 22px rgba(155,92,255,.55);transition:.2s;letter-spacing:1px;
+}
+#langBtn:hover{transform:translateY(-2px) scale(1.05)}
+
+/* HOME */
+#home{background:radial-gradient(circle at 15% 20%,rgba(100,140,255,.18),transparent 40%),radial-gradient(circle at 85% 35%,rgba(0,255,140,.12),transparent 45%),linear-gradient(#07070e,#0c0c1a)}
+#home h1{font-size:clamp(28px,6vw,66px);font-weight:900;background:linear-gradient(135deg,#fff,rgba(200,200,255,.6));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:fadeUp .8s ease;letter-spacing:2px}
+.home-tag{font-size:10px;letter-spacing:4px;color:rgba(255,255,255,.3);text-transform:uppercase;animation:fadeUp .6s ease}
+.home-lead{max-width:540px;font-family:'Share Tech Mono',monospace;font-size:13px;color:rgba(255,255,255,.45);line-height:1.9;animation:fadeUp .8s ease .15s both}
+.home-info-btns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;animation:fadeUp .8s ease .25s both}
+.info-btn{padding:9px 18px;border-radius:100px;font-family:'Orbitron',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:.3s;border:none}
+#btnAE{background:rgba(70,170,255,.1);color:#7dd8ff;border:1px solid rgba(70,170,255,.3)}
+#btnAE:hover{background:rgba(70,170,255,.22);transform:translateY(-3px);box-shadow:0 10px 28px rgba(70,170,255,.25)}
+#btnDEV{background:rgba(0,255,110,.07);color:#7CFFB2;border:1px solid rgba(0,255,110,.25)}
+#btnDEV:hover{background:rgba(0,255,110,.17);transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,255,110,.2)}
+
+/* WORLD CARDS */
+.cards{display:flex;gap:24px;flex-wrap:wrap;justify-content:center;animation:fadeUp .9s ease .35s both}
+.card{width:265px;height:180px;border-radius:22px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font-weight:700;cursor:pointer;font-size:17px;position:relative;overflow:hidden;transition:.35s cubic-bezier(.2,.8,.2,1);letter-spacing:1px}
+.card:hover{transform:translateY(-10px) scale(1.05)}
+.card-icon{font-size:36px;position:relative;z-index:1}
+.card>span:not(.card-icon):not(.card-sub){position:relative;z-index:1}
+.card-sub{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:3px;opacity:.45;font-weight:400;position:relative;z-index:1}
+.card.ae{background:linear-gradient(145deg,#071a2d,#0c3050);color:#7dd8ff;border:1px solid rgba(70,170,255,.28);box-shadow:0 18px 55px rgba(30,120,255,.18)}
+.card.ae:hover{border-color:rgba(70,170,255,.65);box-shadow:0 28px 75px rgba(30,120,255,.42)}
+.card.dev{background:linear-gradient(145deg,#01090401,#031506);color:#00ff88;border:1px solid rgba(0,255,110,.28);box-shadow:0 18px 55px rgba(0,255,110,.13)}
+.card.dev:hover{border-color:rgba(0,255,110,.65);box-shadow:0 28px 75px rgba(0,255,110,.38)}
+/* shimmer */
+.card::after{content:"";position:absolute;top:0;left:-100%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);transition:none}
+.card:hover::after{animation:cardShimmer .55s ease forwards}
+@keyframes cardShimmer{to{left:200%}}
+
+/* THEMES */
+body.theme-ae{background:linear-gradient(160deg,#03091a 0%,#060f24 40%,#040818 100%)}
+/* AE animated orbs */
+body.theme-ae::before{
+  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 55% 35% at 20% 25%,rgba(30,100,255,.22),transparent),
+    radial-gradient(ellipse 40% 50% at 80% 15%,rgba(0,180,255,.14),transparent),
+    radial-gradient(ellipse 60% 40% at 60% 80%,rgba(100,40,255,.12),transparent),
+    radial-gradient(ellipse 35% 45% at 10% 70%,rgba(0,220,255,.08),transparent);
+  animation:aeAurora 12s ease-in-out infinite alternate;
+}
+body.theme-ae::after{
+  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(circle 180px at 75% 45%,rgba(40,130,255,.08),transparent),
+    radial-gradient(circle 100px at 30% 60%,rgba(0,200,255,.06),transparent);
+  animation:aeOrbs 8s ease-in-out infinite alternate;
+}
+@keyframes aeAurora{0%{opacity:.7;transform:scale(1) rotate(0deg)}100%{opacity:1;transform:scale(1.05) rotate(2deg)}}
+@keyframes aeOrbs{0%{transform:translate(0,0)}100%{transform:translate(20px,-15px)}}
+body.theme-dev{background:transparent}
+/* scanlines for dev */
+body.theme-dev #scanlines{opacity:1}
+#scanlines{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.08) 2px,rgba(0,0,0,.08) 4px)}
+/* dark bg layer behind screens but above canvas */
+#devBg{position:fixed;inset:0;z-index:1;pointer-events:none;background:#020c06;opacity:0;transition:opacity .5s}
+body.theme-dev #devBg{opacity:.78}
+/* DEV grid overlay on top of matrix */
+#devGrid{position:fixed;inset:0;z-index:2;pointer-events:none;opacity:0}
+body.theme-dev #devGrid{opacity:1}
+/* DEV corner glow accents */
+body.theme-dev #devAccents{opacity:1}
+#devAccents{position:fixed;inset:0;z-index:2;pointer-events:none;opacity:0;
+  background:
+    radial-gradient(ellipse 30% 40% at 5% 50%,rgba(0,255,100,.06),transparent),
+    radial-gradient(ellipse 25% 35% at 95% 50%,rgba(0,255,100,.05),transparent),
+    radial-gradient(ellipse 50% 20% at 50% 0%,rgba(0,200,80,.08),transparent),
+    radial-gradient(ellipse 50% 20% at 50% 100%,rgba(0,200,80,.06),transparent);
+}
+
+/* CATEGORY */
+body.theme-ae #category{background:transparent}
+body.theme-dev #category{background:transparent}
+#catTitle{font-size:clamp(20px,4vw,50px);font-weight:900;letter-spacing:2px;animation:fadeUp .5s ease}
+body.theme-ae #catTitle{background:linear-gradient(135deg,#7dd8ff,#fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+body.theme-dev #catTitle{color:#00ff88;text-shadow:0 0 26px rgba(0,255,100,.45)}
+.cat-desc{font-family:'Share Tech Mono',monospace;font-size:11px;opacity:.4;letter-spacing:2px;animation:fadeUp .5s ease .1s both}
+/* ORBIT MENU */
+.orbit-card{
+  position:absolute;width:136px;min-height:100px;
+  border-radius:18px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:5px;font-family:'Orbitron',sans-serif;font-size:10px;font-weight:700;
+  cursor:pointer;transition:.3s cubic-bezier(.2,.8,.2,1);border:none;
+  letter-spacing:.5px;padding:14px 10px;
+  pointer-events:auto;
+  animation:orbitIn .5s cubic-bezier(.2,.8,.2,1) both;
+}
+.orbit-card:hover{transform:translate(-50%,-50%) scale(1.12)!important;z-index:20!important}
+@keyframes orbitIn{from{opacity:0;transform:translate(-50%,-50%) scale(.4) rotate(-10deg)}to{opacity:1}}
+.orbit-icon{font-size:24px;margin-bottom:3px;filter:drop-shadow(0 0 8px currentColor)}
+.orbit-label{font-size:11px;font-weight:700;letter-spacing:.5px}
+.orbit-desc{
+  font-family:'Share Tech Mono',monospace;
+  font-size:9px;color:rgba(255,255,255,.38);
+  font-weight:400;line-height:1.4;
+  text-align:center;margin-top:3px;
+}
+body.theme-ae .m-quiz{background:rgba(30,100,255,.12);color:#80d4ff;border:1px solid rgba(30,100,255,.3)}
+body.theme-ae .m-quiz:hover{box-shadow:0 14px 36px rgba(30,100,255,.3);transform:translate(-50%,-50%) scale(1.1)!important;transform:translate(-50%,-50%) scale(1.1)!important}
+body.theme-dev .m-quiz{background:rgba(0,255,100,.07);color:#00ff88;border:1px solid rgba(0,255,100,.2)}
+body.theme-dev .m-quiz:hover{box-shadow:0 14px 36px rgba(0,255,100,.28);transform:translate(-50%,-50%) scale(1.1)!important}
+body.theme-ae .m-g1{background:rgba(100,50,255,.1);color:#c8b4ff;border:1px solid rgba(100,50,255,.25)}
+body.theme-ae .m-g1:hover{box-shadow:0 14px 36px rgba(100,50,255,.3);transform:translate(-50%,-50%) scale(1.1)!important}
+body.theme-dev .m-g1{background:rgba(0,210,255,.07);color:#60e8ff;border:1px solid rgba(0,210,255,.2)}
+body.theme-dev .m-g1:hover{box-shadow:0 14px 36px rgba(0,210,255,.28);transform:translate(-50%,-50%) scale(1.1)!important}
+body.theme-ae .m-g2{background:rgba(0,180,255,.1);color:#7dd8ff;border:1px solid rgba(0,180,255,.25)}
+body.theme-ae .m-g2:hover{box-shadow:0 14px 36px rgba(0,180,255,.3);transform:translate(-50%,-50%) scale(1.1)!important}
+body.theme-dev .m-g2{background:rgba(0,255,70,.06);color:#80ff60;border:1px solid rgba(0,255,70,.2)}
+body.theme-dev .m-g2:hover{box-shadow:0 14px 36px rgba(0,255,70,.28);transform:translate(-50%,-50%) scale(1.1)!important}
+body.theme-ae .m-g3{background:rgba(255,150,0,.08);color:#ffc060;border:1px solid rgba(255,150,0,.22)}
+body.theme-ae .m-g3:hover{box-shadow:0 14px 36px rgba(255,150,0,.3);transform:translate(-50%,-50%) scale(1.1)!important}
+body.theme-dev .m-g3{background:rgba(255,200,0,.06);color:#ffd060;border:1px solid rgba(255,200,0,.2)}
+body.theme-dev .m-g3:hover{box-shadow:0 14px 36px rgba(255,200,0,.25);transform:translate(-50%,-50%) scale(1.1)!important}
+body.theme-ae .m-facts{background:rgba(255,100,200,.07);color:#ffb4e8;border:1px solid rgba(255,100,200,.2)}
+body.theme-ae .m-facts:hover{box-shadow:0 14px 36px rgba(255,100,200,.25);transform:translate(-50%,-50%) scale(1.1)!important}
+body.theme-dev .m-facts{background:rgba(180,255,100,.05);color:#c8ff80;border:1px solid rgba(180,255,100,.18)}
+body.theme-dev .m-facts:hover{box-shadow:0 14px 36px rgba(180,255,100,.22);transform:translate(-50%,-50%) scale(1.1)!important}
+body.theme-ae .m-g4{background:rgba(0,255,200,.07);color:#80ffe8;border:1px solid rgba(0,255,200,.2)}
+body.theme-ae .m-g4:hover{box-shadow:0 14px 36px rgba(0,255,200,.28);transform:translate(-50%,-50%) scale(1.1)!important}
+body.theme-ae .m-g5{background:rgba(255,150,80,.07);color:#ffb880;border:1px solid rgba(255,150,80,.22)}
+body.theme-ae .m-g5:hover{box-shadow:0 14px 36px rgba(255,150,80,.3);transform:translate(-50%,-50%) scale(1.1)!important}
+body.theme-dev .m-g5{background:rgba(200,80,255,.06);color:#dd88ff;border:1px solid rgba(200,80,255,.2)}
+body.theme-dev .m-g5:hover{box-shadow:0 14px 36px rgba(200,80,255,.25);transform:translate(-50%,-50%) scale(1.1)!important}
+body.theme-dev .m-g4{background:rgba(255,80,200,.06);color:#ffb4e8;border:1px solid rgba(255,80,200,.18)}
+body.theme-dev .m-g4:hover{box-shadow:0 14px 36px rgba(255,80,200,.22);transform:translate(-50%,-50%) scale(1.1)!important}
+
+.back-btn{background:rgba(255,255,255,.05);color:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.1)!important;padding:9px 22px;border-radius:100px;font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:1px;cursor:pointer;transition:.2s;animation:fadeUp .6s ease .4s both}
+.back-btn:hover{background:rgba(255,255,255,.1);color:#fff}
+
+/* QUIZ */
+body.theme-ae #quiz{background:rgba(3,8,22,.7)}
+body.theme-dev #quiz{background:rgba(2,12,6,.88)}
+.quiz-hud{display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:center;animation:fadeUp .4s ease}
+.hud-pill{padding:6px 14px;border-radius:100px;font-size:10px;font-weight:700;letter-spacing:1px}
+.p-xp{background:rgba(255,200,0,.1);border:1px solid rgba(255,200,0,.2);color:#ffd060}
+.p-combo{background:rgba(255,80,80,.08);border:1px solid rgba(255,80,80,.18);color:#ff7070}
+.p-prog{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.4)}
+.quiz-box{max-width:660px;width:100%;padding:28px;border-radius:20px;background:rgba(255,255,255,.032);border:1px solid rgba(255,255,255,.07);backdrop-filter:blur(14px);animation:fadeUp .5s ease .1s both}
+.q-prog-bar{width:100%;height:3px;background:rgba(255,255,255,.07);border-radius:2px;margin-bottom:20px;overflow:hidden}
+.q-prog-fill{height:100%;border-radius:2px;transition:width .5s cubic-bezier(.4,0,.2,1)}
+body.theme-ae .q-prog-fill{background:linear-gradient(90deg,#3c8fff,#00cfff)}
+body.theme-dev .q-prog-fill{background:linear-gradient(90deg,#00ff88,#00e5ff)}
+#question{font-size:clamp(14px,2.4vw,18px);font-weight:700;line-height:1.55;margin-bottom:22px;color:#fff}
+body.theme-dev #question{color:#c8ffe0;font-family:'Share Tech Mono',monospace}
+.ans-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+@media(max-width:500px){.ans-grid{grid-template-columns:1fr}}
+.ans-btn{padding:13px 15px;border-radius:12px;font-family:'Orbitron',sans-serif;font-size:10px;font-weight:700;letter-spacing:.4px;cursor:pointer;transition:.22s;border:none;text-align:left;line-height:1.4}
+body.theme-ae .ans-btn{background:rgba(30,110,255,.09);color:#9acfff;border:1px solid rgba(30,110,255,.18)}
+body.theme-ae .ans-btn:hover:not(:disabled){background:rgba(30,110,255,.22);border-color:rgba(30,110,255,.5);transform:translateY(-3px);box-shadow:0 8px 20px rgba(30,110,255,.28)}
+body.theme-dev .ans-btn{background:rgba(0,255,100,.06);color:#7CFFB2;border:1px solid rgba(0,255,100,.15);font-family:'Share Tech Mono',monospace;font-size:12px}
+body.theme-dev .ans-btn:hover:not(:disabled){background:rgba(0,255,100,.16);border-color:rgba(0,255,100,.45);transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,255,100,.18)}
+.ans-btn.correct{background:rgba(0,255,100,.22)!important;border-color:#00ff88!important;color:#fff!important;animation:pop .4s ease}
+.ans-btn.wrong{background:rgba(255,50,50,.18)!important;border-color:#ff3c3c!important;color:#ff9090!important;animation:wshake .3s ease}
+@keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.06)}100%{transform:scale(1)}}
+@keyframes wshake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.ans-info{margin-top:13px;padding:12px 15px;border-radius:10px;font-family:'Share Tech Mono',monospace;font-size:12px;line-height:1.65;animation:fadeUp .3s ease}
+body.theme-ae .ans-info{background:rgba(30,110,255,.1);border:1px solid rgba(30,110,255,.22);color:#b0d8ff}
+body.theme-dev .ans-info{background:rgba(0,255,100,.07);border:1px solid rgba(0,255,100,.18);color:#a0ffcc}
+.next-btn{margin-top:13px;padding:9px 26px;border-radius:100px;font-family:'Orbitron',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;cursor:pointer;border:none;transition:.22s}
+body.theme-ae .next-btn{background:linear-gradient(135deg,#3c8fff,#00cfff);color:#fff}
+body.theme-dev .next-btn{background:linear-gradient(135deg,#00ff88,#00e5ff);color:#020c06}
+.next-btn:hover{transform:translateY(-2px) scale(1.04)}
+
+/* RESULT */
+body.theme-ae #result{background:rgba(3,8,22,.7)}
+body.theme-dev #result{background:rgba(2,12,6,.88)}
+.res-box{padding:36px;border-radius:22px;max-width:440px;width:100%;animation:fadeUp .6s ease}
+body.theme-ae .res-box{background:rgba(30,110,255,.07);border:1px solid rgba(30,110,255,.18)}
+body.theme-dev .res-box{background:rgba(0,255,100,.05);border:1px solid rgba(0,255,100,.18)}
+.res-score{font-size:66px;font-weight:900;line-height:1}
+body.theme-ae .res-score{background:linear-gradient(135deg,#7dd8ff,#fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+body.theme-dev .res-score{background:linear-gradient(135deg,#00ff88,#00e5ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.res-rank{font-size:18px;font-weight:700;letter-spacing:3px;margin:9px 0}
+body.theme-ae .res-rank{color:#7dd8ff}
+body.theme-dev .res-rank{color:#00ff88}
+.res-msg{font-family:'Share Tech Mono',monospace;font-size:12px;opacity:.6;line-height:1.7;margin:11px 0}
+.res-xp{font-size:13px;font-weight:700;margin:8px 0}
+.res-acts{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:15px}
+.res-acts button{padding:9px 18px;border-radius:100px;font-family:'Orbitron',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;cursor:pointer;border:none;transition:.22s}
+.res-acts button:hover{transform:translateY(-2px)}
+.btn-retry{background:rgba(255,255,255,.07);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.12)!important}
+body.theme-ae .btn-back{background:linear-gradient(135deg,#3c8fff,#00cfff);color:#fff}
+body.theme-dev .btn-back{background:linear-gradient(135deg,#00ff88,#00e5ff);color:#020c06}
+
+/* GAME */
+body.theme-ae #game{background:rgba(3,8,22,.7)}
+body.theme-dev #game{background:rgba(2,12,6,.88)}
+#game{gap:10px}
+.game-hud{display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap}
+#gameCanvas{border-radius:15px;display:block;cursor:crosshair;max-width:100%}
+body.theme-dev #gameCanvas{border:1px solid rgba(0,255,100,.28);box-shadow:0 0 35px rgba(0,255,100,.1)}
+body.theme-ae #gameCanvas{border:1px solid rgba(30,110,255,.3);box-shadow:0 0 35px rgba(30,110,255,.18)}
+.game-hint{font-family:'Share Tech Mono',monospace;font-size:11px;color:rgba(255,255,255,.35);max-width:400px;line-height:1.6;text-align:center}
+
+/* FACTS */
+body.theme-ae #factsScreen{background:rgba(3,8,22,.7)}
+body.theme-dev #factsScreen{background:rgba(2,12,6,.88)}
+.facts-wrap{max-width:660px;width:100%;display:flex;flex-direction:column;gap:14px;animation:fadeUp .5s ease}
+.fact-card{padding:18px 20px;border-radius:15px;text-align:left}
+body.theme-ae .fact-card{background:rgba(30,110,255,.07);border:1px solid rgba(30,110,255,.18);color:#b8d8ff}
+body.theme-dev .fact-card{background:rgba(0,255,100,.05);border:1px solid rgba(0,255,100,.16);color:#a0ffcc}
+.fact-n{font-size:9px;font-family:'Orbitron',monospace;font-weight:700;letter-spacing:2px;opacity:.38;margin-bottom:7px}
+.fact-t{font-family:'Orbitron',monospace;font-size:12px;font-weight:700;margin-bottom:6px}
+body.theme-ae .fact-t{color:#7dd8ff}
+body.theme-dev .fact-t{color:#00ff88}
+.fact-b{font-family:'Share Tech Mono',monospace;font-size:12px;line-height:1.75}
+
+/* MASCOT */
+#mascot{position:fixed;bottom:0;right:18px;z-index:50;display:flex;flex-direction:column;align-items:flex-end;gap:7px}
+#mascotBtn{
+  width:52px;height:52px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:26px;cursor:pointer;
+  background:rgba(10,10,20,.9);
+  border:2px solid rgba(155,92,255,.4);
+  box-shadow:0 0 18px rgba(155,92,255,.3);
+  transition:.3s;animation:mascotBob 2.8s ease-in-out infinite;
+  position:relative;
+}
+body.theme-dev #mascotBtn{border-color:rgba(0,255,100,.45);box-shadow:0 0 18px rgba(0,255,100,.28)}
+body.theme-ae #mascotBtn{border-color:rgba(70,170,255,.45);box-shadow:0 0 18px rgba(70,170,255,.28)}
+#mascotBtn:hover{transform:scale(1.15)!important;animation:none}
+@keyframes mascotBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.mascot-dot{position:absolute;top:-2px;right:-2px;width:13px;height:13px;border-radius:50%;background:#ff3c3c;border:2px solid #08080f;font-size:7px;display:flex;align-items:center;justify-content:center;font-weight:700;animation:dotPulse 1.4s ease-in-out infinite}
+@keyframes dotPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.25)}}
+#mascotBubble{
+  background:rgba(8,10,16,.94);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:14px 14px 4px 14px;
+  padding:13px 15px;max-width:230px;
+  font-family:'Share Tech Mono',monospace;
+  font-size:11px;line-height:1.65;
+  -webkit-backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  backdrop-filter:blur(14px);
+  box-shadow:0 8px 28px rgba(0,0,0,.5);
+  animation:bubIn .4s cubic-bezier(.2,.8,.2,1);
+}
+body.theme-dev #mascotBubble{border-color:rgba(0,255,100,.22);color:#c8ffe0}
+body.theme-ae #mascotBubble{border-color:rgba(70,170,255,.22);color:#c8e8ff}
+#mascotBubble.hidden{display:none!important}
+@keyframes bubIn{from{opacity:0;transform:translateY(8px) scale(.95)}to{opacity:1;transform:none}}
+.bub-lbl{font-size:9px;font-family:'Orbitron',sans-serif;letter-spacing:2px;opacity:.4;margin-bottom:7px;text-transform:uppercase}
+.bub-text{margin-bottom:9px}
+.bub-btns{display:flex;gap:7px}
+.bub-btn{padding:5px 11px;border-radius:7px;font-size:9px;font-family:'Orbitron',sans-serif;font-weight:700;letter-spacing:.5px;cursor:pointer;border:none;transition:.2s}
+.bub-btn:hover{transform:translateY(-1px)}
+body.theme-dev .bub-next{background:rgba(0,255,100,.15);color:#00ff88;border:1px solid rgba(0,255,100,.25)!important}
+body.theme-ae .bub-next{background:rgba(70,170,255,.15);color:#7dd8ff;border:1px solid rgba(70,170,255,.25)!important}
+body:not(.theme-ae):not(.theme-dev) .bub-next{background:rgba(155,92,255,.15);color:#c8b4ff;border:1px solid rgba(155,92,255,.25)!important}
+.bub-close{background:rgba(255,255,255,.06);color:rgba(255,255,255,.38);border:1px solid rgba(255,255,255,.1)!important}
+
+
+/* HOME FLOATS */
+.home-floats{position:absolute;inset:0;pointer-events:none;z-index:1;overflow:hidden}
+.hf{position:absolute;font-family:'Share Tech Mono',monospace;font-size:11px;opacity:0;
+  animation:hfloat 12s ease-in-out infinite;white-space:nowrap}
+.hf1{left:5%;top:15%;color:rgba(70,170,255,.28);animation-delay:0s;animation-duration:14s}
+.hf2{right:8%;top:22%;color:rgba(0,255,100,.2);animation-delay:2s;animation-duration:11s}
+.hf3{left:12%;bottom:30%;color:rgba(70,170,255,.2);animation-delay:4s;animation-duration:13s}
+.hf4{right:12%;bottom:25%;color:rgba(0,255,100,.22);animation-delay:1s;animation-duration:10s}
+.hf5{left:2%;top:45%;color:rgba(70,170,255,.18);animation-delay:6s;animation-duration:16s}
+.hf6{right:3%;top:55%;color:rgba(0,255,100,.18);animation-delay:3s;animation-duration:12s}
+.hf7{left:20%;top:8%;color:rgba(255,200,0,.15);animation-delay:5s;animation-duration:15s}
+.hf8{right:20%;bottom:15%;color:rgba(200,100,255,.18);animation-delay:7s;animation-duration:13s}
+@keyframes hfloat{0%{opacity:0;transform:translateY(10px)}20%{opacity:1}80%{opacity:.7}100%{opacity:0;transform:translateY(-20px)}}
+
+/* CARD ENHANCEMENTS */
+.card-glow{position:absolute;inset:-1px;border-radius:22px;opacity:0;transition:.4s;z-index:-1}
+.card-glow-ae{background:radial-gradient(circle at 50% 50%,rgba(60,140,255,.25),transparent 70%)}
+.card-glow-dev{background:radial-gradient(circle at 50% 50%,rgba(0,255,100,.2),transparent 70%)}
+.card.ae:hover .card-glow-ae{opacity:1}
+.card.dev:hover .card-glow-dev{opacity:1}
+.card-tags{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;position:relative;z-index:1;margin-top:4px}
+.card-tags span{font-family:'Share Tech Mono',monospace;font-size:8px;padding:2px 7px;border-radius:100px;opacity:.45}
+.card.ae .card-tags span{background:rgba(60,140,255,.15);border:1px solid rgba(60,140,255,.3);color:#7dd8ff}
+.card.dev .card-tags span{background:rgba(0,255,100,.1);border:1px solid rgba(0,255,100,.25);color:#7CFFB2}
+/* card enter animations */
+.card.ae{animation:cardSlideL .7s cubic-bezier(.2,.8,.2,1) .4s both}
+.card.dev{animation:cardSlideR .7s cubic-bezier(.2,.8,.2,1) .5s both}
+@keyframes cardSlideL{from{opacity:0;transform:translateX(-40px) scale(.9)}to{opacity:1;transform:none}}
+@keyframes cardSlideR{from{opacity:0;transform:translateX(40px) scale(.9)}to{opacity:1;transform:none}}
+
+/* HOME STATS */
+.home-stats{display:flex;align-items:center;gap:0;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:100px;padding:8px 24px;animation:fadeUp 1s ease .6s both}
+.stat-item{display:flex;flex-direction:column;align-items:center;padding:0 16px}
+.stat-num{font-size:20px;font-weight:900;background:linear-gradient(135deg,#7dd8ff,#00ff88);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-lbl{font-family:'Share Tech Mono',monospace;font-size:9px;opacity:.35;letter-spacing:1px;margin-top:1px}
+.stat-sep{width:1px;height:30px;background:rgba(255,255,255,.1)}
+
+/* COMBO */
+.combo-pop{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);font-size:48px;font-weight:900;pointer-events:none;z-index:30;animation:comboBurst .7s cubic-bezier(.2,.8,.2,1) forwards;text-shadow:0 0 26px currentColor}
+@keyframes comboBurst{0%{transform:translate(-50%,-50%) scale(0);opacity:1}50%{transform:translate(-50%,-65%) scale(1.3);opacity:1}100%{transform:translate(-50%,-90%) scale(.7);opacity:0}}
+
+/* AE PARTICLES */
+.aep{position:fixed;pointer-events:none;z-index:3;border-radius:50%;opacity:0;animation:aefloat 3.5s ease forwards}
+@keyframes aefloat{0%{opacity:0;transform:translateY(0) scale(0)}20%{opacity:.65}80%{opacity:.3}100%{opacity:0;transform:translateY(-100px) scale(.2)}}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:center;z-index:60;animation:mbgIn .3s ease}
+@keyframes mbgIn{from{opacity:0}to{opacity:1}}
+.modal-bg.hidden{display:none!important}
+.modal-box{position:relative;width:92%;max-width:640px;padding:36px;border-radius:24px;color:#eaf7ff;overflow:hidden;isolation:isolate;box-shadow:0 28px 75px rgba(0,0,0,.6);animation:mboxIn .45s cubic-bezier(.2,.8,.2,1)}
+@keyframes mboxIn{from{opacity:0;transform:translateY(24px) scale(.95);filter:blur(8px)}to{opacity:1;transform:none;filter:blur(0)}}
+.modal-box::before{content:"";position:absolute;inset:-60%;z-index:-2;filter:blur(60px);opacity:.85;animation:flowRot 18s linear infinite}
+.modal-box::after{content:"";position:absolute;inset:0;z-index:-1;background:rgba(4,7,12,.6);border-radius:24px;backdrop-filter:blur(4px)}
+@keyframes flowRot{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+.modal-box.ae{background:linear-gradient(140deg,#061828,#0d3050,#061828);border:1px solid rgba(70,170,255,.28)}
+.modal-box.ae::before{background:radial-gradient(circle at 20% 30%,#3c8fff,transparent 40%),radial-gradient(circle at 80% 70%,#00cfff,transparent 45%),radial-gradient(circle at 60% 20%,#7dd8ff,transparent 40%)}
+.modal-box.dev{background:linear-gradient(140deg,#010b04,#062618,#010b04);border:1px solid rgba(0,255,100,.22)}
+.modal-box.dev::before{background:radial-gradient(circle at 25% 25%,#00ff88,transparent 40%),radial-gradient(circle at 75% 75%,#00ffd0,transparent 45%),radial-gradient(circle at 60% 30%,#66ffe6,transparent 40%)}
+.modal-inner{position:relative;z-index:1}
+.modal-tag{font-size:9px;letter-spacing:3px;opacity:.38;margin-bottom:7px;text-transform:uppercase}
+.modal-box h2{font-size:clamp(20px,4vw,30px);font-weight:900;margin-bottom:11px;color:#fff;animation:textUp .5s ease .05s both}
+.modal-box p{font-family:'Share Tech Mono',monospace;font-size:13px;line-height:1.85;color:rgba(255,255,255,.77);animation:textUp .5s ease .15s both}
+.modal-box ul{list-style:none;margin-top:11px;display:flex;flex-direction:column;gap:6px}
+.modal-box ul li{font-family:'Share Tech Mono',monospace;font-size:12px;color:rgba(255,255,255,.6);padding-left:14px;position:relative}
+.modal-box ul li::before{content:"→";position:absolute;left:0;opacity:.4}
+@keyframes textUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+#modalCloseBtn{margin-top:18px;padding:8px 20px;border-radius:100px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.09);color:#fff;font-family:'Orbitron',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:.22s;animation:textUp .6s ease .25s both}
+#modalCloseBtn:hover{background:rgba(255,255,255,.18);transform:translateY(-2px)}
+.sweep{position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.05),transparent);animation:sweep 3.2s ease-in-out infinite;pointer-events:none;z-index:2}
+@keyframes sweep{0%{left:-100%}100%{left:200%}}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+
+
+/* ADMIN PANEL */
+.adm-tab{border-color:rgba(200,0,0,.15);color:rgba(255,80,80,.4);background:rgba(200,0,0,.05);border:1px solid rgba(200,0,0,.15);color:rgba(255,80,80,.5);padding:7px 14px;border-radius:8px;font-family:'Orbitron',sans-serif;font-size:9px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:.2s}
+.adm-tab.active,.adm-tab:hover{background:rgba(200,0,0,.12);border-color:rgba(200,0,0,.4);color:#ff5555}
+.adm-pane{animation:fadeUp .3s ease}
+.adm-stat{background:rgba(200,0,0,.04);border:1px solid rgba(200,0,0,.1);border-radius:10px;padding:14px}
+.adm-stat-lbl{font-size:9px;color:rgba(200,0,0,.4);letter-spacing:1px;margin-bottom:4px;font-family:'Orbitron',sans-serif}
+.adm-stat-val{font-size:15px;font-weight:700;color:#ff5555;font-family:'Orbitron',sans-serif}
+.adm-btn{background:rgba(200,0,0,.08);border:1px solid rgba(200,0,0,.2);color:#ff5555;padding:7px 14px;border-radius:7px;font-family:'Share Tech Mono',monospace;font-size:10px;cursor:pointer;transition:.2s}
+.adm-btn:hover{background:rgba(200,0,0,.18)}
+.adm-qrow{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:14px;margin-bottom:10px}
+.adm-qnum{font-size:9px;color:rgba(200,0,0,.4);letter-spacing:2px;margin-bottom:5px;font-family:'Orbitron',sans-serif}
+.adm-qtext{font-size:12px;color:#fff;margin-bottom:8px;line-height:1.5;font-family:'Share Tech Mono',monospace}
+.adm-ans{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.adm-ans-opt{font-size:10px;padding:4px 10px;border-radius:100px;border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.5);font-family:'Share Tech Mono',monospace}
+.adm-ans-opt.ok{background:rgba(200,0,0,.12);border-color:rgba(200,0,0,.35);color:#ff5555;font-weight:700}
+#adminPanel::-webkit-scrollbar{width:4px}
+#adminPanel::-webkit-scrollbar-track{background:rgba(180,0,0,.06)}
+#adminPanel::-webkit-scrollbar-thumb{background:rgba(200,0,0,.35);border-radius:4px}
+
+/* ABOUT */
+.about-tag{font-family:'Share Tech Mono',monospace;font-size:10px;padding:4px 10px;border-radius:100px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.55)}
+#aboutBtn:hover{background:rgba(255,255,255,.09);color:rgba(255,255,255,.7);transform:translateY(-2px)}
+#aboutCloseBtn:hover{background:rgba(255,255,255,.14)}
+
+/* ═══════════════════════════════════════════
+   MOBILE & CROSS-BROWSER OPTIMIZATION
+   Works in Chrome, Edge, Firefox, Safari iOS
+═══════════════════════════════════════════ */
+
+/* iOS Safari fixes */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+* { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+input, button { -webkit-appearance: none; appearance: none; }
+
+/* Prevent bounce scroll on iOS */
+body { overscroll-behavior: none; }
+
+/* Canvas touch - stop page scroll while playing */
+#gameCanvas {
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  display: block; /* removes inline gap */
+}
+
+/* ── Canvas responsive sizing ── */
+@media (max-width: 460px) {
+  #gameCanvas {
+    width: calc(100vw - 24px) !important;
+    height: auto !important;
+    max-width: 380px;
+    border-radius: 12px;
+  }
+  #game { padding: 52px 8px 14px !important; gap: 7px !important; }
+  #gameHint { font-size: 9px !important; max-width: 96vw; }
+  #gameTitle { font-size: 9px !important; }
+  .g-btn { padding: 8px 14px; font-size: 8px; }
+}
+
+/* ── Home screen mobile ── */
+@media (max-width: 600px) {
+  #home { padding: 30px 16px 50px !important; gap: 16px !important; }
+  .home-title { font-size: 42px !important; }
+  .home-lead { font-size: 11px !important; padding: 0 8px; }
+  .cards { gap: 12px !important; flex-direction: column; align-items: center; }
+  .card { width: min(300px, 90vw) !important; padding: 22px 18px !important; }
+  .home-info-btns { flex-direction: column; gap: 8px !important; }
+  .info-btn { font-size: 10px; }
+  .home-stats { gap: 10px !important; }
+  .stat-num { font-size: 18px !important; }
+  #aboutBtn { font-size: 8px !important; padding: 6px 14px !important; }
+}
+
+/* ── Quiz mobile ── */
+@media (max-width: 600px) {
+  #quiz { padding: 66px 12px 28px !important; gap: 14px !important; }
+  .q-text { font-size: 13px !important; padding: 0 4px; }
+  .q-answers { grid-template-columns: 1fr !important; width: 96vw !important; gap: 8px !important; }
+  .q-ans { font-size: 11px !important; padding: 11px 13px !important; }
+  .q-explanation { width: 96vw !important; font-size: 10px !important; }
+}
+
+/* ── Category orbit mobile ── */
+@media (max-width: 520px) {
+  .orbit-card { min-width: 80px !important; padding: 7px 10px !important; font-size: 8px !important; }
+}
+
+/* ── Result mobile ── */
+@media (max-width: 480px) {
+  #result { padding: 30px 16px !important; gap: 14px !important; }
+  .result-score { font-size: 38px !important; }
+  .result-title { font-size: 22px !important; }
+  .result-rank { font-size: 34px !important; }
+  .result-btns { flex-direction: column; align-items: center; }
+  .r-btn { width: 220px !important; }
+}
+
+/* ── Facts mobile ── */
+@media (max-width: 600px) {
+  #factsScreen { padding: 66px 12px 28px !important; gap: 14px !important; }
+  .fact-cards { width: 97vw !important; }
+  .fact-text { font-size: 11px !important; }
+}
+
+/* ── HUD mobile ── */
+@media (max-width: 480px) {
+  #hud { padding: 8px 10px !important; gap: 6px !important; }
+  .hud-score, .hud-lives, .hud-xp, .hud-lvl { font-size: 9px !important; }
+}
+
+/* ── Buttons: minimum touch target ── */
+@media (max-width: 600px) {
+  button { min-height: 36px; }
+  #langBtn { top: 10px !important; right: 10px !important; padding: 5px 12px !important; }
+  #backBtn { top: 10px !important; left: 10px !important; }
+}
+
+/* ── Mascot mobile ── */
+@media (max-width: 480px) {
+  #mascot { bottom: 12px !important; right: 12px !important; }
+  .mascot-body { width: 44px !important; height: 44px !important; font-size: 22px !important; }
+  #bubbleWrap { width: 168px !important; right: -4px !important; }
+}
+
+/* ── Modal mobile ── */
+@media (max-width: 520px) {
+  .modal-box { padding: 24px 18px !important; width: 93vw !important; }
+  #aboutModal .about-box,
+  #aboutGradBg > div { padding: 28px 18px !important; width: 93vw !important; }
+}
+
+/* ── Admin panel mobile ── */
+@media (max-width: 600px) {
+  .adm-header { padding: 10px 14px !important; }
+  .adm-header-title { font-size: 14px !important; }
+  .adm-header-sub { font-size: 7px !important; }
+  .adm-content { padding: 14px 12px 50px !important; }
+  .adm-tabs { padding: 12px 12px 0 !important; gap: 4px !important; }
+  .adm-tab { padding: 6px 10px !important; font-size: 8px !important; letter-spacing: 0 !important; }
+  .adm-world-toggle { width: 100% !important; }
+  .adm-wt-btn { padding: 9px 0 !important; flex: 1 !important; text-align: center; }
+  .adm-debug-grid { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+  .adm-login-box { width: 90vw !important; padding: 28px 20px !important; }
+  .adm-qrow { padding: 10px 12px !important; }
+  .adm-qtext { font-size: 11px !important; }
+}
+
+
+  </style>
+</head>
+<body>
+
+<!-- MATRIX (z-index 0, always behind) -->
+<canvas id="matrixBg"></canvas>
+<div id="scanlines"></div>
+<div id="devBg"></div>
+<canvas id="devGrid"></canvas>
+<div id="devAccents"></div>
+<div id="glitchOverlay"></div>
+<!-- crashWord removed -->
+<canvas id="aeBg"></canvas>
+
+<button id="langBtn">EN</button>
+
+<!-- MASCOT -->
+<div id="mascot">
+  <div id="mascotBubble" class="hidden">
+    <div class="bub-lbl" id="bubLbl">💡 Факт</div>
+    <div class="bub-text" id="bubText"></div>
+    <div class="bub-btns">
+      <button class="bub-btn bub-next" id="bubNext">Ещё →</button>
+      <button class="bub-btn bub-close" id="bubClose">✕</button>
+    </div>
+  </div>
+  <div id="mascotBtn">
+    <span id="mascotEmoji">🤖</span>
+    <div class="mascot-dot">!</div>
+  </div>
+</div>
+
+<!-- HOME -->
+<section id="home" class="screen" style="position:relative;overflow:hidden">
+  <!-- animated home background canvas -->
+  <canvas id="homeBg" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0"></canvas>
+
+  <!-- floating code snippets decoration -->
+  <div class="home-floats" aria-hidden="true">
+    <span class="hf hf1">keyframe</span><span class="hf hf2">function(){}</span>
+    <span class="hf hf3">animate</span><span class="hf hf4">const dev</span>
+    <span class="hf hf5">wiggle</span><span class="hf hf6">return true</span>
+    <span class="hf hf7">.map()</span><span class="hf hf8">opacity</span>
+  </div>
+
+  <div class="home-tag" data-i18n="home_tag" style="position:relative;z-index:2">ИНТЕРАКТИВНОЕ ОБУЧЕНИЕ</div>
+
+  <!-- split title AE vs DEV -->
+  <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:4px">
+    <h1 data-i18n="home_title" style="font-size:clamp(30px,7vw,74px);font-weight:900;letter-spacing:3px;background:linear-gradient(135deg,#fff,rgba(200,200,255,.6));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:fadeUp .8s ease">Выбери мир</h1>
+    <div style="display:flex;gap:18px;font-family:'Share Tech Mono',monospace;font-size:11px;opacity:.35;letter-spacing:2px;animation:fadeUp .8s ease .1s both">
+      <span style="color:#7dd8ff">MOTION DESIGN</span>
+      <span style="opacity:.4">vs</span>
+      <span style="color:#00ff88">SOFTWARE DEV</span>
+    </div>
+  </div>
+
+  <p class="home-lead" data-i18n="home_lead" style="position:relative;z-index:2">Два пути. Один выбор. Узнай что такое Motion Design и Software Development — через квизы, игры и факты.</p>
+
+  <div class="home-info-btns" style="position:relative;z-index:2">
+    <button id="btnAE" class="info-btn" data-i18n="btn_ae">Что такое After Effects?</button>
+    <button id="btnDEV" class="info-btn" data-i18n="btn_dev">Что такое разработка?</button>
+  </div>
+
+  <!-- enhanced cards -->
+  <div class="cards" style="position:relative;z-index:2">
+    <div class="card ae" data-cat="ae">
+      <div class="card-glow card-glow-ae"></div>
+      <span class="card-icon">🎬</span>
+      <span data-i18n="ae_card">After Effects</span>
+      <span class="card-sub">MOTION DESIGN</span>
+      <div class="card-tags">
+        <span>Animation</span><span>VFX</span><span>Motion</span>
+      </div>
+    </div>
+    <div class="card dev" data-cat="dev">
+      <div class="card-glow card-glow-dev"></div>
+      <span class="card-icon">💻</span>
+      <span data-i18n="dev_card">Software Developer</span>
+      <span class="card-sub">CODE &amp; BUILD</span>
+      <div class="card-tags">
+        <span>JavaScript</span><span>HTML</span><span>CSS</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- bottom stats bar -->
+  <div class="home-stats" style="position:relative;z-index:2">
+    <div class="stat-item"><span class="stat-num">8</span><span class="stat-lbl" data-i18n="stat_games">Игр</span></div>
+    <div class="stat-sep"></div>
+    <div class="stat-item"><span class="stat-num">20</span><span class="stat-lbl" data-i18n="stat_quiz">Вопросов</span></div>
+    <div class="stat-sep"></div>
+    <div class="stat-item"><span class="stat-num">14</span><span class="stat-lbl" data-i18n="stat_facts">Фактов</span></div>
+  </div>
+  <!-- about button -->
+  <button id="aboutBtn" data-i18n="about_btn" style="position:relative;z-index:2;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.38);font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:2px;padding:7px 16px;border-radius:100px;cursor:pointer;transition:.25s;animation:fadeUp 1s ease .7s both">
+    ✦ О создателе
+  </button>
+</section>
+
+<!-- CATEGORY — full canvas orbit -->
+<section id="category" class="screen hidden" style="position:relative;min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0;overflow:hidden">
+  <!-- orbit canvas behind cards -->
+  <canvas id="orbitCanvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1"></canvas>
+  <!-- center info -->
+  <div id="centerCard" style="position:relative;z-index:5;text-align:center;pointer-events:none;margin-bottom:0">
+    <div id="catTitle" style="font-size:clamp(22px,4vw,52px);font-weight:900;letter-spacing:2px;animation:fadeUp .5s ease"></div>
+    <div id="catDesc" class="cat-desc" style="margin-top:6px"></div>
+    <p id="catLead" style="font-family:'Share Tech Mono',monospace;font-size:12px;color:rgba(255,255,255,.32);max-width:280px;line-height:1.7;margin:10px auto 0"></p>
+  </div>
+  <!-- orbit cards injected here by JS, absolutely positioned -->
+  <div id="menuGrid" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:6"></div>
+  <!-- back btn fixed bottom center -->
+  <button class="back-btn" id="backHome" data-i18n="back_btn" style="position:absolute;bottom:24px;left:50%;transform:translateX(-50%);z-index:10">← Назад</button>
+</section>
+
+<!-- QUIZ -->
+<section id="quiz" class="screen hidden">
+  <div class="quiz-hud">
+    <div class="hud-pill p-xp">⚡ XP: <span id="xpVal">0</span></div>
+    <div class="hud-pill p-combo">🔥 <span id="comboVal">0</span></div>
+    <div class="hud-pill p-prog"><span id="progVal">1/10</span></div>
+  </div>
+  <div class="quiz-box">
+    <div class="q-prog-bar"><div class="q-prog-fill" id="qFill" style="width:0%"></div></div>
+    <h2 id="question"></h2>
+    <div id="answers" class="ans-grid"></div>
+    <div id="ansInfo" style="display:none"></div>
+    <button id="nextBtn" class="next-btn hidden" data-i18n="next_btn">Далее →</button>
+  </div>
+  <button class="back-btn" id="backCatQ" data-i18n="back_btn">← Назад</button>
+</section>
+
+<!-- GAME -->
+<section id="game" class="screen hidden">
+  <div class="game-hud">
+    <div class="hud-pill p-xp">Score: <span id="gScore">0</span></div>
+    <div class="hud-pill p-combo">❤️ <span id="gLives">3</span></div>
+    <div class="hud-pill p-prog" id="gLvlPill">LVL 1</div>
+  </div>
+  <canvas id="gameCanvas" width="420" height="500"></canvas>
+  <p class="game-hint" id="gameHint"></p>
+  <button class="back-btn" id="backCatG" data-i18n="back_btn">← Назад</button>
+</section>
+
+<!-- FACTS -->
+<section id="factsScreen" class="screen hidden">
+  <h1 id="factsTitle" style="font-size:clamp(20px,4vw,42px);font-weight:900;letter-spacing:2px;animation:fadeUp .5s ease"></h1>
+  <div class="facts-wrap" id="factsWrap"></div>
+  <button class="back-btn" id="backCatF" data-i18n="back_btn">← Назад</button>
+</section>
+
+<!-- RESULT -->
+<section id="result" class="screen hidden">
+  <div class="res-box">
+    <div class="res-score" id="resScore">0/10</div>
+    <div class="res-rank" id="resRank"></div>
+    <div class="res-msg" id="resMsg"></div>
+    <div class="res-xp" id="resXP"></div>
+    <div class="res-acts">
+      <button class="btn-retry" id="retryBtn" data-i18n="retry_btn">↺ Заново</button>
+      <button class="btn-back" id="backFromRes" data-i18n="back_btn">← Назад</button>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT SECTION -->
+<div id="aboutModal" class="modal-bg hidden">
+  <div id="aboutBox" style="position:relative;width:92%;max-width:560px;border-radius:28px;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.7);animation:mboxIn .5s cubic-bezier(.2,.8,.2,1)">
+    <!-- gradient bg -->
+    <div id="aboutGradBg" style="position:absolute;inset:0;z-index:0"></div>
+    <div style="position:absolute;inset:0;background:rgba(4,7,14,.72);backdrop-filter:blur(16px);z-index:1;border-radius:28px;border:1px solid rgba(255,255,255,.08)"></div>
+    <!-- content -->
+    <div style="position:relative;z-index:2;padding:40px 36px 32px">
+      <!-- top accent line -->
+      <div id="aboutAccentLine" style="width:60px;height:3px;border-radius:100px;margin-bottom:24px"></div>
+      <!-- avatar placeholder -->
+      <div style="display:flex;align-items:center;gap:18px;margin-bottom:28px">
+        <div id="aboutAvatar" style="width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0">🧑‍💻</div>
+        <div>
+          <div style="font-size:11px;letter-spacing:3px;opacity:.4;font-family:'Share Tech Mono',monospace;margin-bottom:4px">CREATOR</div>
+          <div style="font-size:clamp(18px,3vw,26px);font-weight:900;letter-spacing:1px;color:#fff">Kolpakchi Andrey</div>
+          <div id="aboutRoleLine" style="font-family:'Share Tech Mono',monospace;font-size:11px;margin-top:3px"></div>
+        </div>
+      </div>
+
+      <!-- description -->
+      <p id="aboutDesc" style="font-family:'Share Tech Mono',monospace;font-size:13px;line-height:1.85;color:rgba(255,255,255,.62);margin-bottom:24px"></p>
+
+      <!-- tags -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:28px">
+        <span class="about-tag">Motion Design</span>
+        <span class="about-tag">Software Dev</span>
+        <span class="about-tag">Education</span>
+        <span class="about-tag">Interactive</span>
+      </div>
+
+      <!-- contact -->
+      <div id="aboutContact" style="display:flex;align-items:center;gap:12px;padding:14px 18px;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);margin-bottom:20px">
+        <span style="font-size:18px">📬</span>
+        <div>
+          <div style="font-size:9px;letter-spacing:2px;opacity:.35;font-family:'Orbitron',sans-serif;margin-bottom:3px">EMAIL</div>
+          <a href="/cdn-cgi/l/email-protection#107b7f7c60717b7379717e7462797a50777d71797c3e737f7d" style="color:inherit;text-decoration:none;font-family:'Share Tech Mono',monospace;font-size:13px;font-weight:600" id="aboutEmail"><span class="__cf_email__" data-cfemail="ff9490938f9e949c969e919b8d9695bf98929e9693d19c9092">[email&#160;protected]</span></a>
+        </div>
+      </div>
+
+      <!-- built with -->
+      <div style="font-family:'Share Tech Mono',monospace;font-size:10px;opacity:.28;letter-spacing:1px;text-align:center;margin-bottom:18px" id="aboutBuilt"></div>
+
+      <button id="aboutCloseBtn" style="width:100%;padding:12px;border-radius:100px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.07);color:#fff;font-family:'Orbitron',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:.22s" id="aboutCloseBtn">ЗАКРЫТЬ ✕ / CLOSE ✕</button>
+    </div>
+  </div>
+</div>
+
+<!-- INFO MODAL -->
+<div id="infoModal" class="modal-bg hidden">
+  <div class="modal-box" id="modalBox">
+    <div class="modal-inner">
+      <div class="modal-tag" id="modalTag"></div>
+      <h2 id="modalTitle"></h2>
+      <p id="modalText"></p>
+      <ul id="modalList"></ul>
+      <button id="modalCloseBtn">Закрыть ✕</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======================== ADMIN PANEL ======================== -->
+<div id="adminPanel" style="display:none;position:fixed;inset:0;z-index:200;background:linear-gradient(160deg,#0a0204,#110305,#0c0203);-webkit-backdrop-filter:blur(22px);backdrop-filter:blur(22px);overflow-y:auto;font-family:'Share Tech Mono',monospace">
+  <div style="max-width:900px;margin:0 auto;padding:28px 20px 60px">
+    <!-- header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid rgba(0,255,100,.18)">
+      <div>
+        <div style="font-size:9px;color:rgba(255,60,60,.5);letter-spacing:4px;font-family:'Orbitron',sans-serif;margin-bottom:6px">RESTRICTED — ADMIN ACCESS ONLY</div>
+        <div style="font-size:22px;font-weight:900;color:#ff4444;font-family:'Orbitron',sans-serif;text-shadow:0 0 24px rgba(0,255,100,.4);letter-spacing:2px">⚡ Developer Panel</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.28);margin-top:4px">Kolpakchi Andrey — AE &amp; DEV World v2.0</div>
+      </div>
+      <button onclick="document.getElementById('adminPanel').style.display='none'" style="background:rgba(255,60,60,.12);border:1px solid rgba(255,60,60,.28);color:#ff6060;padding:10px 20px;border-radius:10px;cursor:pointer;font-family:'Orbitron',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;transition:.2s">✕ CLOSE</button>
+    </div>
+    <!-- tabs -->
+    <div style="display:flex;gap:8px;margin-bottom:22px;flex-wrap:wrap">
+      <button class="adm-tab active" onclick="adminTab(this,'answers')">📋 Ответы / Answers</button>
+      <button class="adm-tab" onclick="adminTab(this,'quiz')">🧠 Квиз / Quiz</button>
+      <button class="adm-tab" onclick="adminTab(this,'games')">🎮 Игры / Games</button>
+      <button class="adm-tab" onclick="adminTab(this,'debug')">🐛 Debug</button>
+    </div>
+    <!-- ANSWERS TAB -->
+    <div id="adm-answers" class="adm-pane"><div id="adminAnswerList"></div></div>
+    <!-- QUIZ TAB -->
+    <div id="adm-quiz" class="adm-pane" style="display:none"><div id="adminQuizFull"></div></div>
+    <!-- GAMES TAB -->
+    <div id="adm-games" class="adm-pane" style="display:none"><div id="adminGamesData"></div></div>
+    <!-- DEBUG TAB -->
+    <div id="adm-debug" class="adm-pane" style="display:none">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px">
+        <div class="adm-stat"><div class="adm-stat-lbl">World / Мир</div><div class="adm-stat-val" id="dbg-cat">—</div></div>
+        <div class="adm-stat"><div class="adm-stat-lbl">Language / Язык</div><div class="adm-stat-val" id="dbg-lang">—</div></div>
+        <div class="adm-stat"><div class="adm-stat-lbl">Game / Игра</div><div class="adm-stat-val" id="dbg-grun">—</div></div>
+        <div class="adm-stat"><div class="adm-stat-lbl">Quiz Q / Вопрос</div><div class="adm-stat-val" id="dbg-qi">—</div></div>
+      </div>
+      <div style="margin-bottom:14px">
+        <div style="font-size:9px;color:rgba(0,255,100,.4);margin-bottom:8px;font-family:'Orbitron',sans-serif;letter-spacing:2px">CONSOLE LOG (last 60 entries)</div>
+        <div id="dbg-console" style="background:rgba(0,0,0,.5);border:1px solid rgba(0,255,100,.15);border-radius:10px;padding:14px;max-height:240px;overflow-y:auto;font-size:11px;color:rgba(0,255,100,.75);line-height:1.9;font-family:'Share Tech Mono',monospace"></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="adm-btn" onclick="adminLog('✅ Manual test: everything OK')">Test Log</button>
+        <button class="adm-btn" onclick="adminRefreshDebug()">↻ Refresh</button>
+        <button class="adm-btn" onclick="document.getElementById('dbg-console').innerHTML='';adminLogs=[]">Clear</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN LOGIN MODAL -->
+<div id="adminLogin" style="display:none;position:fixed;inset:0;z-index:199;background:rgba(0,0,0,.93);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);align-items:center;justify-content:center">
+  <div style="background:linear-gradient(160deg,#100508,#1a0508,#0e0204);border:1px solid rgba(220,40,40,.35);border-radius:22px;padding:44px 36px;width:360px;max-width:90vw;text-align:center;box-shadow:0 0 100px rgba(200,0,0,.18),inset 0 1px 0 rgba(255,80,80,.1)">
+    <div style="width:58px;height:58px;border-radius:50%;background:rgba(200,0,0,.15);border:2px solid rgba(200,0,0,.45);display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 18px;box-shadow:0 0 30px rgba(200,0,0,.25)">🔐</div>
+    <div style="font-size:8px;letter-spacing:5px;color:rgba(220,60,60,.5);font-family:'Orbitron',sans-serif;margin-bottom:10px">RESTRICTED ACCESS</div>
+    <div style="font-size:26px;font-weight:900;color:#ff3333;font-family:'Orbitron',sans-serif;letter-spacing:3px;margin-bottom:6px;text-shadow:0 0 40px rgba(220,0,0,.6)">ADMIN</div>
+    <div style="font-size:10px;color:rgba(255,255,255,.28);margin-bottom:30px;font-family:'Share Tech Mono',monospace;letter-spacing:1px">Developer-only zone. Enter secret code.</div>
+    <input id="adminCodeInput" type="password" placeholder="••••••••••••" autocomplete="off"
+      style="width:100%;background:rgba(200,0,0,.07);border:1px solid rgba(200,0,0,.28);border-radius:10px;padding:14px 16px;color:#ff6060;font-family:'Share Tech Mono',monospace;font-size:16px;outline:none;text-align:center;margin-bottom:10px;transition:.2s;letter-spacing:4px"
+      onkeydown="if(event.key==='Enter')checkAdminCode()">
+    <div id="adminCodeErr" style="font-size:11px;color:#ff4444;margin-bottom:12px;min-height:18px;font-family:'Share Tech Mono',monospace"></div>
+    <button onclick="checkAdminCode()" style="width:100%;background:rgba(200,0,0,.18);border:1px solid rgba(200,0,0,.4);color:#ff4444;padding:14px;border-radius:10px;font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:.2s;margin-bottom:12px;text-shadow:0 0 12px rgba(220,0,0,.4)">ENTER →</button>
+    <button onclick="document.getElementById('adminLogin').style.display='none'" style="background:none;border:none;color:rgba(255,255,255,.2);font-family:'Share Tech Mono',monospace;font-size:11px;cursor:pointer;letter-spacing:1px">cancel</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     Scripts — load order matters!
+     1. app.js   — core state & data
+     2. quiz.js  — quiz & game launcher
+     3. game.js  — all mini-games
+════════════════════════════════════════ -->
+<script>
+/* =====================================================
+   app.js — Core: i18n, State, Navigation, About, Admin
+   Dependencies: none (must load first)
+===================================================== */
+
+/* ===================================================
+   i18n
+=================================================== */
+const T={
+  ru:{
+    home_tag:"ИНТЕРАКТИВНОЕ ОБУЧЕНИЕ",
+    home_title:"Выбери мир",
+    home_lead:"Два пути. Один выбор. Узнай что такое Motion Design и Software Development — через квизы, игры и факты.",
+    ae_card:"After Effects",dev_card:"Software Developer",
+    btn_ae:"Что такое After Effects?",btn_dev:"Что такое разработка?",
+    quiz_btn:"🧠 Квиз",back_btn:"← Назад",close_btn:"Закрыть ✕",
+    next_btn:"Далее →",retry_btn:"↺ Заново",facts_btn:"📚 Факты",
+    cat_ae:"Мир After Effects",cat_dev:"Мир Разработчика",
+    cat_ae_desc:"MOTION DESIGN & VFX",cat_dev_desc:"CODE & BUILD",
+    ae_tag:"ADOBE / MOTION",dev_tag:"CODE / BUILD",
+    ae_title:"After Effects",dev_title:"Software Development",
+    ae_text:"After Effects — профессиональный инструмент Adobe для создания motion graphics и визуальных эффектов. Анимации, кино-эффекты, UI переходы — всё создаётся здесь.",
+    ae_list:["Анимация через кейфреймы","Слои, маски, эффекты","VFX и композитинг","Motion Graphics для рекламы и кино"],
+    dev_text:"Разработчик ПО создаёт приложения, сайты и системы с помощью кода. Это превращение идей в работающие цифровые продукты.",
+    dev_list:["HTML, CSS, JavaScript","Алгоритмы и структуры данных","API и базы данных","Git, деплой, командная работа"],
+    rank_0:"BEGINNER",rank_1:"JUNIOR",rank_2:"MID-LEVEL",rank_3:"SENIOR",rank_4:"LEGEND 🔥",
+    rmsg_0:"Не сдавайся! Повтори ещё раз.",rmsg_1:"Хорошее начало!",rmsg_2:"Неплохо! Ты шаришь.",rmsg_3:"Впечатляет!",rmsg_4:"ЛЕГЕНДА! Идеально!",
+    rxp:"Заработано XP:",
+    facts_ae_title:"Факты об After Effects",facts_dev_title:"Факты о разработке",
+    bub_lbl:"💡 Факт",bub_next:"Ещё →",bub_close:"✕",
+    stat_games:"Игр",stat_quiz:"Вопросов",stat_facts:"Фактов",about_btn:"✦ О создателе / About",
+    ae_g1:"🎬 Поймай кейфреймы",ae_g2:"🔤 AE Слова",ae_g3:"🎨 Сортировщик",ae_g4:"⚡ Reaction",ae_g5:"🎭 Motion Builder",
+    dev_g1:"🐛 Охота на баги",dev_g2:"🔤 Заполни код",dev_g3:"🔀 Сортировка строк",dev_g4:"❓ Что выведет?",dev_g5:"🔬 Debug Quest",
+    ae_g1_hint:"Лови ◆◇✦★ кейфреймы — избегай ✖ ошибок. Управление: мышь",
+    ae_g2_hint:"Видишь буквы AE терминов — нажимай нужную клавишу!",
+    ae_g3_hint:"Кликай слои в правильном порядке / Click layers in the correct order",ae_g5_hint:"Собери нужные инструменты для эффекта / Select the right tools for the effect",
+    ae_g4_hint:"Нажимай нужный параметр до того как таймер кончится!",
+    dev_g1_hint:"Лови корректный код, избегай багов. Мышь или тач",
+    dev_g2_hint:"Нажимай нужную клавишу — символ кода падает сверху!",
+    dev_g3_hint:"Расставь строки кода в правильном порядке / Arrange code lines in the correct order",dev_g5_hint:"Найди строку с багом — кликни на неё / Find the bug line and click it",
+    dev_g4_hint:"Определи что выведет код — тренируй чтение кода!",
+  },
+  en:{
+    home_tag:"INTERACTIVE LEARNING",
+    home_title:"Choose Your World",
+    home_lead:"Two paths. One choice. Explore Motion Design and Software Development — through quizzes, games and facts.",
+    ae_card:"After Effects",dev_card:"Software Developer",
+    btn_ae:"What is After Effects?",btn_dev:"What is Software Dev?",
+    quiz_btn:"🧠 Quiz",back_btn:"← Back",close_btn:"Close ✕",
+    next_btn:"Next →",retry_btn:"↺ Retry",facts_btn:"📚 Facts",
+    cat_ae:"After Effects World",cat_dev:"Developer World",
+    cat_ae_desc:"MOTION DESIGN & VFX",cat_dev_desc:"CODE & BUILD",
+    ae_tag:"ADOBE / MOTION",dev_tag:"CODE / BUILD",
+    ae_title:"After Effects",dev_title:"Software Development",
+    ae_text:"After Effects is Adobe's professional tool for motion graphics and visual effects. Animations, cinematic FX, UI transitions — all created here.",
+    ae_list:["Keyframe-based animation","Layers, masks, effects","VFX & compositing","Motion Graphics for ads and film"],
+    dev_text:"A software developer builds apps, websites and systems with code. Turning ideas into working digital products.",
+    dev_list:["HTML, CSS, JavaScript","Algorithms & data structures","APIs & databases","Git, deployment, teamwork"],
+    rank_0:"BEGINNER",rank_1:"JUNIOR",rank_2:"MID-LEVEL",rank_3:"SENIOR",rank_4:"LEGEND 🔥",
+    rmsg_0:"Don't give up! Try again.",rmsg_1:"Good start!",rmsg_2:"Nice! You know this.",rmsg_3:"Impressive!",rmsg_4:"LEGEND! Perfect!",
+    rxp:"XP Earned:",
+    facts_ae_title:"After Effects Facts",facts_dev_title:"Dev World Facts",
+    bub_lbl:"💡 Fact",bub_next:"More →",bub_close:"✕",
+    stat_games:"Games",stat_quiz:"Questions",stat_facts:"Facts",about_btn:"✦ About / О создателе",
+    ae_g1:"🎬 Catch Keyframes",ae_g2:"🔤 AE Words",ae_g3:"🎨 Layer Sorter",ae_g4:"⚡ Reaction",ae_g5:"🎭 Motion Builder",
+    dev_g1:"🐛 Bug Hunt",dev_g2:"🔤 Fill The Code",dev_g3:"🔀 Code Sorter",dev_g4:"❓ What Outputs?",dev_g5:"🔬 Debug Quest",
+    ae_g1_hint:"Catch ◆◇✦★ keyframes — dodge ✖ errors. Control: mouse",
+    ae_g2_hint:"See AE term letters falling — press the right key!",
+    ae_g3_hint:"Click layers in the correct AE pipeline order",ae_g5_hint:"Select the right tools for the effect",
+    ae_g4_hint:"Press the right parameter before the timer runs out!",
+    dev_g1_hint:"Catch correct code, dodge bugs. Mouse or touch",
+    dev_g2_hint:"Press the key — a code character is falling from above!",
+    dev_g3_hint:"Arrange code lines in the correct order — click to sort",dev_g5_hint:"Find the bug line and click it",
+    dev_g4_hint:"Determine what the code outputs — train your code reading!",
+  }
+};
+
+/* ===================================================
+   FACTS
+=================================================== */
+const FACTS={
+  ae:{
+    ru:[
+      {t:"Анимация = иллюзия",b:"Кино работает потому что мозг объединяет 24 кадра/сек в движение. В AE ты создаёшь именно это — поток кейфреймов, который мозг читает как плавное движение."},
+      {t:"wiggle — одна строка = 50 кейфреймов",b:"Expression wiggle(2,30) заставляет слой случайно дрожать. 2 = частота в секунду, 30 = амплитуда пикселей. Ни одного кейфрейма вручную!"},
+      {t:"Первый Motion Graphics — 1955",b:"Saul Bass вручную анимировал титры фильма «Человек с золотой рукой». Сегодня то же самое делается в AE за минуты."},
+      {t:"Pre-compose = папка слоёв",b:"Pre-compose группирует слои в одну вложенную Comp. Как группировка в Figma. Без этого в сложных проектах утонешь в 200 слоях."},
+      {t:"Easy Ease имитирует физику",b:"Без Easy Ease объект движется с одинаковой скоростью — как робот. С Easy Ease он разгоняется и тормозит — как в реальном мире."},
+      {t:"Adjustment Layer — магия",b:"Эффект на Adjustment Layer применяется ко ВСЕМ слоям ниже. Один слой с Color Grading — и весь проект меняет цвет. Мощнейший инструмент."},
+      {t:"Парентинг слоёв",b:"Parent & Link связывает слои: дочерний повторяет движение родителя. Это основа персонажной анимации — двигаешь тело, руки идут автоматически."},
+    ],
+    en:[
+      {t:"Animation = illusion",b:"Film works because the brain merges 24fps into motion. In AE you create exactly this — a flow of keyframes the brain reads as smooth movement."},
+      {t:"wiggle — one line = 50 keyframes",b:"The expression wiggle(2,30) makes a layer randomly shake. 2 = frequency per second, 30 = pixel amplitude. Zero manual keyframes!"},
+      {t:"First Motion Graphics — 1955",b:"Saul Bass manually animated the title sequence for 'The Man with the Golden Arm'. Today AE does the same in minutes."},
+      {t:"Pre-compose = layer folder",b:"Pre-compose groups layers into one nested Comp. Like grouping in Figma. Without it you'd drown in 200 layers in complex projects."},
+      {t:"Easy Ease mimics physics",b:"Without Easy Ease an object moves at constant speed — like a robot. With Easy Ease it accelerates and decelerates — like the real world."},
+      {t:"Adjustment Layer — magic",b:"An effect on an Adjustment Layer applies to ALL layers below. One Color Grading layer changes the whole project's color. Incredibly powerful."},
+      {t:"Layer parenting",b:"Parent & Link connects layers: the child follows the parent's movement. This is the foundation of character animation."},
+    ]
+  },
+  dev:{
+    ru:[
+      {t:"Первый баг — настоящий жук",b:"В 1947 году в компьютере Гарварда нашли мотылька, застрявшего в реле. Его вклеили в журнал с надписью 'First actual case of bug found'. Отсюда слово «баг»."},
+      {t:"JavaScript за 10 дней",b:"Brendan Eich создал JavaScript за 10 дней в 1995 году. Сейчас это самый популярный язык в мире — запускается в каждом браузере."},
+      {t:"Git создан из злости",b:"Линус Торвальдс (создатель Linux) написал Git за 2 недели в 2005 году после ссоры с компанией BitKeeper. Сейчас им пользуется весь мир."},
+      {t:"null — ошибка на $1 млрд",b:"Тони Хоар изобрёл null в 1965 году и позже назвал это «ошибкой на миллиард долларов» — столько потеряно из-за NullPointerException."},
+      {t:"HTML — не язык программирования",b:"HTML (HyperText Markup Language) — язык разметки, а не программирования. В нём нет условий, циклов, переменных. Он просто описывает структуру."},
+      {t:"Senior не знает всё наизусть",b:"Профессиональный разработчик не помнит синтаксис — он знает где искать. Google, MDN docs, Stack Overflow — это рабочий инструмент, не признак слабости."},
+      {t:"console.log — лучший друг",b:"Самый используемый инструмент отладки в мире — это console.log(). Даже опытные разработчики пишут его 50 раз в день."},
+    ],
+    en:[
+      {t:"First bug was a real bug",b:"In 1947, a moth was found stuck in a Harvard computer relay. It was taped into the logbook: 'First actual case of bug found'. That's where the word 'bug' comes from."},
+      {t:"JavaScript in 10 days",b:"Brendan Eich created JavaScript in 10 days in 1995. It's now the world's most popular language — running in every browser."},
+      {t:"Git was built in anger",b:"Linus Torvalds (creator of Linux) wrote Git in 2 weeks in 2005 after a dispute with BitKeeper. Now the whole world uses it."},
+      {t:"null — $1 billion mistake",b:"Tony Hoare invented null in 1965 and later called it his 'billion dollar mistake' — that's how much has been lost to NullPointerException bugs."},
+      {t:"HTML is not a programming language",b:"HTML (HyperText Markup Language) is markup, not programming. No conditions, no loops, no variables. It just describes structure."},
+      {t:"Seniors don't memorize everything",b:"A professional developer doesn't remember syntax — they know where to look. Google, MDN docs, Stack Overflow are work tools, not signs of weakness."},
+      {t:"console.log is your best friend",b:"The most-used debugging tool in the world is console.log(). Even experienced developers write it 50 times a day."},
+    ]
+  }
+};
+
+/* ===================================================
+   MASCOT FACTS (quick tips)
+=================================================== */
+const MF={
+  home:{ru:["Нажми на карточку мира — начни приключение! 👆","Оба мира реально крутые — сначала попробуй оба 😄","After Effects — про визуал. Dev — про логику. Что тебе ближе?"],
+        en:["Click a world card to start! 👆","Both worlds are awesome — try both first 😄","AE is about visuals. Dev is about logic. What fits you?"]},
+  ae:{ru:["💡 P, S, R, O, T — горячие клавиши для основных параметров в AE","🎬 wiggle(2,30) — один Expression заменяет десятки кейфреймов!","⚡ Easy Ease (F9) — делает любую анимацию живой","🌀 Pre-compose — это как группа слоёв, только умнее","🎯 Adjustment Layer — применяет эффект ко всем слоям ниже"],
+     en:["💡 P, S, R, O, T — hotkeys for main AE parameters","🎬 wiggle(2,30) — one Expression replaces dozens of keyframes!","⚡ Easy Ease (F9) — makes any animation feel alive","🌀 Pre-compose — like a layer group but smarter","🎯 Adjustment Layer — applies effect to all layers below"]},
+  dev:{ru:["💡 console.log() — твой лучший друг при отладке","🔥 var устарел — используй let и const","⚡ => это стрелочная функция: (x) => x * 2","🎯 undefined ≠ null: undefined — не задано, null — намеренно пусто","🤖 Git add → commit → push — три шага чтобы сохранить работу"],
+      en:["💡 console.log() — your best friend for debugging","🔥 var is outdated — use let and const","⚡ => is an arrow function: (x) => x * 2","🎯 undefined ≠ null: undefined = not set, null = intentionally empty","🤖 Git add → commit → push — three steps to save your work"]}
+};
+
+/* ===================================================
+   QUIZ DATA
+=================================================== */
+const QD={
+  ae:[
+    {q:{ru:"Для чего используют After Effects?",en:"What is After Effects used for?"},a:[{ru:"Монтаж видео",en:"Video editing"},{ru:"Анимация и визуальные эффекты",en:"Animation and VFX"},{ru:"Работа со звуком",en:"Audio production"},{ru:"3D-моделирование",en:"3D modeling"}],c:1,i:{ru:"AE — для motion graphics и VFX. Для монтажа — Premiere Pro.",en:"AE is for motion graphics and VFX. Editing is done in Premiere Pro."}},
+    {q:{ru:"Что такое keyframe?",en:"What is a keyframe?"},a:[{ru:"Плагин Adobe",en:"An Adobe plugin"},{ru:"Ключевая точка анимации",en:"A key animation point"},{ru:"Тип медиа-файла",en:"A media file type"},{ru:"Команда экспорта",en:"An export command"}],c:1,i:{ru:"Кейфрейм = значение параметра в момент времени. AE сам строит переход между двумя кейфреймами.",en:"Keyframe = parameter value at a point in time. AE automatically builds the transition between two keyframes."}},
+    {q:{ru:"Что делает Easy Ease (F9)?",en:"What does Easy Ease (F9) do?"},a:[{ru:"Удаляет кейфреймы",en:"Deletes keyframes"},{ru:"Ускоряет рендер",en:"Speeds up render"},{ru:"Сглаживает вход и выход",en:"Smooths in and out"},{ru:"Добавляет звук",en:"Adds audio"}],c:2,i:{ru:"Easy Ease имитирует физику — объект плавно разгоняется и замедляется, как в реальном мире.",en:"Easy Ease mimics physics — objects accelerate and decelerate, just like in the real world."}},
+    {q:{ru:"Composition в AE — это?",en:"What is a Composition in AE?"},a:[{ru:"Рабочая сцена проекта",en:"A project working scene"},{ru:"Тип слоя",en:"A layer type"},{ru:"Плагин",en:"A plugin"},{ru:"Формат экспорта",en:"An export format"}],c:0,i:{ru:"Composition — рабочая сцена. Как холст для художника. Здесь ты размещаешь слои и создаёшь анимацию.",en:"Composition is the working scene. Like a canvas for a painter. You place layers here and create animation."}},
+    {q:{ru:"Что такое Adjustment Layer?",en:"What does an Adjustment Layer do?"},a:[{ru:"Добавляет фон",en:"Adds background"},{ru:"Применяет эффект ко всем слоям ниже",en:"Applies effect to all layers below"},{ru:"Управляет камерой",en:"Controls camera"},{ru:"Импортирует видео",en:"Imports footage"}],c:1,i:{ru:"Adjustment Layer невидим, но его эффекты применяются ко всем слоям ниже. Идеален для цветокоррекции.",en:"Adjustment Layer is invisible but its effects apply to all layers below. Perfect for color grading."}},
+    {q:{ru:"Что делает функция wiggle(2,30)?",en:"What does wiggle(2,30) do?"},a:[{ru:"Удаляет кейфреймы",en:"Removes keyframes"},{ru:"Добавляет случайное движение",en:"Adds random movement"},{ru:"Меняет цвет",en:"Changes color"},{ru:"Ускоряет анимацию",en:"Speeds up animation"}],c:1,i:{ru:"wiggle — Expression (мини-код). 2 раза в секунду, 30 пикселей. Слой дрожит без единого кейфрейма вручную!",en:"wiggle is an Expression (mini-code). 2 times/sec, 30px amplitude. Layer shakes with zero manual keyframes!"}},
+    {q:{ru:"Pre-compose делает что?",en:"What does Pre-compose do?"},a:[{ru:"Удаляет слои",en:"Deletes layers"},{ru:"Группирует слои во вложенную Comp",en:"Groups layers into a nested Comp"},{ru:"Применяет размытие",en:"Applies blur"},{ru:"Экспортирует в MP4",en:"Exports to MP4"}],c:1,i:{ru:"Pre-compose = несколько слоёв → одна вложенная Composition. Как группировка в Figma, только для анимации.",en:"Pre-compose = multiple layers → one nested Composition. Like grouping in Figma, but for animation."}},
+    {q:{ru:"Motion Blur — это?",en:"What is Motion Blur?"},a:[{ru:"Шум и зернистость",en:"Noise and grain"},{ru:"Размытие движущихся объектов",en:"Blur on moving objects"},{ru:"Цветовой фильтр",en:"Color filter"},{ru:"Сжатие видео",en:"Video compression"}],c:1,i:{ru:"Motion Blur добавляет физически корректное размытие — анимация выглядит как реальная киносъёмка.",en:"Motion Blur adds physically accurate blur — animation looks like real film footage."}},
+    {q:{ru:"Mask (маска) нужна для?",en:"What is a Mask used for?"},a:[{ru:"Аудио-эффектов",en:"Audio effects"},{ru:"Ограничения видимой области слоя",en:"Restricting the visible area"},{ru:"3D рендера",en:"3D rendering"},{ru:"Экспорта GIF",en:"GIF export"}],c:1,i:{ru:"Маска = трафарет. Скрывает или открывает часть слоя. Незаменима для текстовых анимаций и переходов.",en:"Mask = stencil. Hides or reveals part of a layer. Essential for text reveals and transitions."}},
+    {q:{ru:"Graph Editor управляет?",en:"What does Graph Editor control?"},a:[{ru:"Цветом слоя",en:"Layer color"},{ru:"FPS проекта",en:"Project FPS"},{ru:"Кривыми скорости анимации",en:"Animation speed curves"},{ru:"Настройками экспорта",en:"Export settings"}],c:2,i:{ru:"Graph Editor = кривые скорости. Здесь превращают деревянную анимацию в плавную и живую.",en:"Graph Editor = speed curves. This is where you turn stiff animation into smooth and alive motion."}},
+  ],
+  dev:[
+    {q:{ru:"Что такое переменная?",en:"What is a variable?"},a:[{ru:"Ошибка кода",en:"A code error"},{ru:"Контейнер для данных",en:"A data container"},{ru:"Тип файла",en:"A file type"},{ru:"Браузер",en:"A browser"}],c:1,i:{ru:"Переменная = имя для данных. let score = 0 — score хранит ноль. const нельзя менять, let — можно.",en:"Variable = name for data. let score = 0 — score holds zero. const can't be changed, let can."}},
+    {q:{ru:"JavaScript нужен для?",en:"What is JavaScript used for?"},a:[{ru:"Стили страницы",en:"Page styles"},{ru:"Структура HTML",en:"HTML structure"},{ru:"Интерактивность и логика",en:"Interactivity and logic"},{ru:"Хранение файлов",en:"File storage"}],c:2,i:{ru:"JS = мозг страницы: клики, анимации, запросы к серверу. HTML — кости, CSS — одежда, JS — мозг.",en:"JS = brain of the page: clicks, animations, server requests. HTML is bones, CSS is clothes, JS is the brain."}},
+    {q:{ru:"HTML — это?",en:"HTML is?"},a:[{ru:"Язык программирования",en:"A programming language"},{ru:"База данных",en:"A database"},{ru:"Язык разметки страницы",en:"Page markup language"},{ru:"Серверный язык",en:"A server language"}],c:2,i:{ru:"HTML НЕ язык программирования! Это разметка. Тегами описываешь структуру: <h1> заголовок, <p> параграф.",en:"HTML is NOT a programming language! It's markup. Tags describe structure: <h1> heading, <p> paragraph."}},
+    {q:{ru:"CSS отвечает за?",en:"CSS controls?"},a:[{ru:"Серверную логику",en:"Server logic"},{ru:"Внешний вид",en:"Appearance"},{ru:"Данные",en:"Data"},{ru:"Алгоритмы",en:"Algorithms"}],c:1,i:{ru:"CSS = стиль. Цвета, шрифты, отступы, анимации. Без CSS сайт выглядит как txt файл из 1994 года.",en:"CSS = style. Colors, fonts, spacing, animations. Without CSS a website looks like a txt file from 1994."}},
+    {q:{ru:"Что делает цикл for?",en:"What does a for loop do?"},a:[{ru:"Шифрует данные",en:"Encrypts data"},{ru:"Удаляет файлы",en:"Deletes files"},{ru:"Повторяет код",en:"Repeats code"},{ru:"Подключает API",en:"Connects to API"}],c:2,i:{ru:"for(let i=0; i<5; i++) выполнит код 5 раз. Без цикла пришлось бы писать одно и то же вручную 5 раз.",en:"for(let i=0; i<5; i++) runs code 5 times. Without it you'd write the same thing manually 5 times."}},
+    {q:{ru:"Что такое функция?",en:"What is a function?"},a:[{ru:"Ошибка",en:"An error"},{ru:"Тип данных",en:"A data type"},{ru:"Переиспользуемый блок кода",en:"A reusable code block"},{ru:"База данных",en:"A database"}],c:2,i:{ru:"Функция — код с именем. Написал раз — вызываешь много раз. Принцип DRY: Don't Repeat Yourself.",en:"Function = named code. Write once, call many times. DRY principle: Don't Repeat Yourself."}},
+    {q:{ru:"Что такое API?",en:"What is an API?"},a:[{ru:"Язык программирования",en:"A programming language"},{ru:"Интерфейс общения программ",en:"Interface for programs to communicate"},{ru:"База данных",en:"A database"},{ru:"ОС",en:"An OS"}],c:1,i:{ru:"API = меню в ресторане. Говоришь что хочешь (запрос) — получаешь ответ. Погода на сайте — это API.",en:"API = restaurant menu. Say what you want (request) — get a response. Weather on a website is an API call."}},
+    {q:{ru:"Git нужен для?",en:"What is Git used for?"},a:[{ru:"Дизайна",en:"Design"},{ru:"Звука",en:"Audio"},{ru:"Контроля версий кода",en:"Version control"},{ru:"3D",en:"3D"}],c:2,i:{ru:"Git = Ctrl+Z для всего проекта. Хранит историю изменений, позволяет работать в команде.",en:"Git = Ctrl+Z for the whole project. Stores change history, enables teamwork."}},
+    {q:{ru:"Frontend — это?",en:"Frontend is?"},a:[{ru:"Серверная часть",en:"Server side"},{ru:"База данных",en:"Database"},{ru:"То что видит пользователь",en:"What the user sees"},{ru:"Алгоритм",en:"Algorithm"}],c:2,i:{ru:"Frontend = HTML+CSS+JS. Всё что видит пользователь в браузере. Backend = сервер и базы данных.",en:"Frontend = HTML+CSS+JS. Everything the user sees in the browser. Backend = server and databases."}},
+    {q:{ru:"Что делает console.log()?",en:"What does console.log() do?"},a:[{ru:"Удаляет код",en:"Deletes code"},{ru:"Выводит данные в консоль",en:"Outputs data to console"},{ru:"Компилирует JS",en:"Compiles JS"},{ru:"Отправляет запрос",en:"Sends a request"}],c:1,i:{ru:"console.log() выводит данные в консоль браузера (F12). Самый используемый инструмент отладки в мире.",en:"console.log() outputs data to the browser console (F12). The world's most-used debugging tool."}},
+  ]
+};
+
+/* ===================================================
+   STATE
+=================================================== */
+let lang=localStorage.getItem("lang")||"ru";
+let cat=null, gameId=0;
+let qi=0,sc=0,xp=0,combo=0,aq=[];
+let gRun=false, gAnim=null;
+let mfIdx=0, mfList=[];
+
+/* ===================================================
+   LANGUAGE
+=================================================== */
+function applyLang(){
+  document.querySelectorAll("[data-i18n]").forEach(el=>{
+    const k=el.dataset.i18n; if(T[lang][k]) el.textContent=T[lang][k];
+  });
+  document.getElementById("langBtn").textContent=lang==="ru"?"EN":"RU";
+  if(cat){
+    document.getElementById("catTitle").textContent=T[lang]["cat_"+cat];
+    document.getElementById("catDesc").textContent=T[lang]["cat_"+cat+"_desc"];
+    buildMenu();
+  }
+  document.getElementById("modalCloseBtn").textContent=T[lang]["close_btn"];
+  const acb=document.getElementById("aboutCloseBtn");if(acb)acb.textContent=lang==="ru"?"ЗАКРЫТЬ ✕":"CLOSE ✕";
+  document.getElementById("bubNext").textContent=T[lang]["bub_next"];
+  document.getElementById("bubClose").textContent=T[lang]["bub_close"];
+  document.getElementById("bubLbl").textContent=T[lang]["bub_lbl"];
+}
+document.getElementById("langBtn").onclick=()=>{
+  lang=lang==="ru"?"en":"ru"; localStorage.setItem("lang",lang); applyLang();
+  if(aq.length&&!document.getElementById("quiz").classList.contains("hidden")) loadQ();
+};
+
+/* ===================================================
+   SCREENS
+=================================================== */
+function show(id){
+  ["home","category","quiz","game","factsScreen","result"].forEach(s=>
+    document.getElementById(s).classList.add("hidden"));
+  document.getElementById(id).classList.remove("hidden");
+  if(id==="home"){document.body.className="";stopGame();}
+}
+
+/* ===================================================
+   CATEGORY + MENU
+=================================================== */
+document.querySelectorAll(".card").forEach(c=>c.onclick=()=>openCat(c.dataset.cat));
+function openCat(c){
+  cat=c; document.body.classList.remove("theme-ae","theme-dev");
+  document.body.classList.add("theme-"+c);
+  document.getElementById("catTitle").textContent=T[lang]["cat_"+c];
+  document.getElementById("catDesc").textContent=T[lang]["cat_"+c+"_desc"];
+  buildMenu(); show("category");
+  document.getElementById("mascotEmoji").textContent=c==="dev"?"🤖":"🎬";
+}
+
+function buildMenu(){
+  const grid=document.getElementById("menuGrid");
+  grid.innerHTML="";
+  const isAE=cat==="ae";
+
+  const lead={ru:isAE?"Изучай Motion Design через игры и квизы":"Учись программировать через игры и квизы",
+               en:isAE?"Learn Motion Design through games & quizzes":"Learn coding through games & quizzes"};
+  document.getElementById("catLead").textContent=lead[lang];
+
+  const descs={
+    ru:{quiz:"10 вопросов",ae_g1:"Лови кейфреймы",ae_g2:"Набирай AE термины",ae_g3:"Расставь по порядку",ae_g4:"Горячие клавиши AE",ae_g5:"Собери анимацию",
+        dev_g1:"Лови код, уворачивайся",dev_g2:"Синтаксис JS/CSS/HTML",dev_g3:"Сложи программу",dev_g4:"Угадай вывод кода",dev_g5:"Найди баг в коде",facts:"7 фактов"},
+    en:{quiz:"10 questions",ae_g1:"Catch keyframes",ae_g2:"Type AE terms",ae_g3:"Sort layers",ae_g4:"AE hotkeys",ae_g5:"Build animation",
+        dev_g1:"Catch code, dodge bugs",dev_g2:"JS/CSS/HTML syntax",dev_g3:"Build from lines",dev_g4:"Guess output",dev_g5:"Find the bug",facts:"7 facts"}
+  };
+
+  const items=[
+    {k:"quiz",cls:"m-quiz",lbl:T[lang]["quiz_btn"],dk:"quiz"},
+    {k:"g1",cls:"m-g1",lbl:T[lang][cat+"_g1"],dk:cat+"_g1"},
+    {k:"g2",cls:"m-g2",lbl:T[lang][cat+"_g2"],dk:cat+"_g2"},
+    {k:"g3",cls:"m-g3",lbl:T[lang][cat+"_g3"],dk:cat+"_g3"},
+    {k:"g4",cls:"m-g4",lbl:T[lang][cat+"_g4"],dk:cat+"_g4"},
+    {k:"g5",cls:"m-g5",lbl:T[lang][cat+"_g5"]||"🎭 Bonus",dk:cat+"_g5"},
+    {k:"facts",cls:"m-facts",lbl:T[lang]["facts_btn"],dk:"facts"},
+  ];
+
+  // Compute orbit center and radius from actual viewport
+  function placeCards(){
+    const W=window.innerWidth, H=window.innerHeight;
+    const cx=W/2, cy=H/2;
+    // adaptive radius
+    const R=Math.min(W,H)*0.32;
+    const R2=Math.min(W,H)*0.28;
+    // angle offsets: top=270°, then clockwise 60° steps
+    const angles=[270,321,12,64,116,167,218]; // 7 items evenly
+    // Store positions for canvas lines
+    window._orbitPositions={cx,cy,pts:[],R,isAE};
+    items.forEach((it,i)=>{
+      const ang=angles[i]*Math.PI/180;
+      const px=cx+R*Math.cos(ang);
+      const py=cy+R2*Math.sin(ang);
+      window._orbitPositions.pts.push({x:px,y:py});
+
+      let btn=document.getElementById("ob_"+it.k);
+      if(!btn){
+        btn=document.createElement("button");
+        btn.id="ob_"+it.k;
+        btn.className="orbit-card "+it.cls;
+        if(it.k==="quiz") btn.onclick=startQuiz;
+        else if(it.k==="facts") btn.onclick=showFacts;
+        else btn.onclick=()=>launchGame(parseInt(it.k[1]),it.k);
+        grid.appendChild(btn);
+      }
+      const icon=it.lbl.split(" ")[0];
+      const lbl=it.lbl.split(" ").slice(1).join(" ") || it.lbl;
+      const desc=descs[lang][it.dk]||"";
+      btn.innerHTML=`<span class="orbit-icon">${icon}</span><span class="orbit-label">${lbl}</span><span class="orbit-desc">${desc}</span>`;
+      btn.style.cssText=`left:${px}px;top:${py}px;transform:translate(-50%,-50%);animation-delay:${i*.08}s`;
+    });
+  }
+  placeCards();
+  // recompute on resize
+  if(window._orbitResizeHandler) window.removeEventListener("resize",window._orbitResizeHandler);
+  window._orbitResizeHandler=()=>{grid.innerHTML="";buildMenu();};
+  window.addEventListener("resize",window._orbitResizeHandler);
+
+  // Start canvas orbit animation
+  startOrbitCanvas();
+}
+
+function startOrbitCanvas(){
+  const canvas=document.getElementById("orbitCanvas");
+  if(!canvas)return;
+  const ctx=canvas.getContext("2d");
+  const isAE=cat==="ae";
+  const col=isAE?"60,140,255":"0,255,100";
+
+  let animating=true;
+  let t=0;
+
+  // particles along lines
+  const particles=[];
+  function initParticles(){
+    particles.length=0;
+    const pos=window._orbitPositions;
+    if(!pos) return;
+    pos.pts.forEach((_,i)=>{
+      // 3 particles per line
+      for(let j=0;j<3;j++){
+        particles.push({lineIdx:i,progress:Math.random(),speed:.004+Math.random()*.006,size:2.5+Math.random()*2});
+      }
+    });
+  }
+
+  function resize(){
+    canvas.width=canvas.offsetWidth||window.innerWidth;
+    canvas.height=canvas.offsetHeight||window.innerHeight;
+  }
+  resize();
+
+  // cancel previous
+  if(window._orbitAnimCancel) window._orbitAnimCancel();
+  let cancelled=false;
+  window._orbitAnimCancel=()=>{cancelled=true;};
+
+  function draw(){
+    if(cancelled||!document.getElementById("category")||document.getElementById("category").classList.contains("hidden")){
+      return;
+    }
+    requestAnimationFrame(draw);
+    t+=.018;
+
+    const pos=window._orbitPositions;
+    if(!pos){requestAnimationFrame(draw);return;}
+
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    const cx=pos.cx, cy=pos.cy;
+
+    // ---- Outer glow ring ----
+    const ringR=pos.R*1.05;
+    const ringGrd=ctx.createRadialGradient(cx,cy,ringR*.92,cx,cy,ringR*1.08);
+    ringGrd.addColorStop(0,`rgba(${col},0.0)`);
+    ringGrd.addColorStop(.5,`rgba(${col},0.06)`);
+    ringGrd.addColorStop(1,`rgba(${col},0.0)`);
+    ctx.beginPath();ctx.arc(cx,cy,ringR,0,Math.PI*2);
+    ctx.strokeStyle=`rgba(${col},0.08)`;ctx.lineWidth=1.5;ctx.stroke();
+
+    // ---- Animated dashed ring ----
+    ctx.save();
+    ctx.translate(cx,cy);ctx.rotate(t*.15);
+    ctx.setLineDash([8,16]);
+    ctx.strokeStyle=`rgba(${col},0.12)`;ctx.lineWidth=1;
+    ctx.beginPath();ctx.arc(0,0,ringR*.98,0,Math.PI*2);ctx.stroke();
+    ctx.setLineDash([]);ctx.restore();
+
+    // ---- Lines from center to each card ----
+    if(particles.length===0) initParticles();
+
+    pos.pts.forEach((pt,i)=>{
+      // pulsing alpha
+      const pulse=.1+.07*Math.sin(t*1.4+i*.8);
+      const grad=ctx.createLinearGradient(cx,cy,pt.x,pt.y);
+      grad.addColorStop(0,`rgba(${col},${pulse*2})`);
+      grad.addColorStop(.5,`rgba(${col},${pulse})`);
+      grad.addColorStop(1,`rgba(${col},0)`);
+      ctx.strokeStyle=grad;ctx.lineWidth=1.2;
+      ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(pt.x,pt.y);ctx.stroke();
+
+      // dot at card end
+      const dotPulse=.3+.2*Math.sin(t*2+i*.9);
+      ctx.beginPath();ctx.arc(pt.x,pt.y,4+2*dotPulse,0,Math.PI*2);
+      const dg=ctx.createRadialGradient(pt.x,pt.y,0,pt.x,pt.y,6+2*dotPulse);
+      dg.addColorStop(0,`rgba(${col},${.7+.3*dotPulse})`);
+      dg.addColorStop(1,`rgba(${col},0)`);
+      ctx.fillStyle=dg;ctx.fill();
+    });
+
+    // ---- Moving particles along lines ----
+    particles.forEach(p=>{
+      p.progress+=p.speed;
+      if(p.progress>1) p.progress=0;
+      const pt=pos.pts[p.lineIdx];
+      if(!pt)return;
+      const x=cx+(pt.x-cx)*p.progress;
+      const y=cy+(pt.y-cy)*p.progress;
+      const alpha=(1-p.progress)*0.85;
+      const pg=ctx.createRadialGradient(x,y,0,x,y,p.size*2);
+      pg.addColorStop(0,`rgba(${col},${alpha})`);
+      pg.addColorStop(1,"transparent");
+      ctx.fillStyle=pg;
+      ctx.beginPath();ctx.arc(x,y,p.size,0,Math.PI*2);ctx.fill();
+    });
+
+    // ---- Center pulsing core ----
+    const cp=.5+.35*Math.sin(t*1.8);
+    const cg=ctx.createRadialGradient(cx,cy,0,cx,cy,28+8*cp);
+    cg.addColorStop(0,`rgba(${col},${.35*cp})`);
+    cg.addColorStop(.4,`rgba(${col},${.12*cp})`);
+    cg.addColorStop(1,"transparent");
+    ctx.fillStyle=cg;ctx.beginPath();ctx.arc(cx,cy,28+8*cp,0,Math.PI*2);ctx.fill();
+
+    // ---- Floating ambient particles ----
+    for(let k=0;k<3;k++){
+      const angle2=t*.4+k*2.09;
+      const drift=pos.R*.15;
+      const px=cx+Math.cos(angle2+k*1.2)*drift*(1+.3*Math.sin(t+k));
+      const py=cy+Math.sin(angle2*1.3+k)*drift*.7;
+      const pa=.12+.08*Math.sin(t*2.5+k*1.8);
+      ctx.fillStyle=`rgba(${col},${pa})`;
+      ctx.beginPath();ctx.arc(px,py,3+k,0,Math.PI*2);ctx.fill();
+    }
+  }
+  draw();
+}
+
+document.getElementById("backHome").onclick=()=>show("home");
+document.getElementById("backCatQ").onclick=()=>show("category");
+document.getElementById("backCatG").onclick=()=>{stopGame();show("category");}
+document.getElementById("backCatF").onclick=()=>show("category");
+document.getElementById("backFromRes").onclick=()=>show("category");
+
+/* ===================================================
+   QUIZ
+=================================================== */
+
+function openAbout(){
+  const modal=document.getElementById("aboutModal");
+  const isAE=cat==="ae";
+  const isDev=cat==="dev";
+  const col=isDev?"0,255,100":isAE?"60,140,255":"155,92,255";
+  const colHex=isDev?"#00ff88":isAE?"#3c8fff":"#9b5cff";
+
+  // gradient bg
+  const gbg=document.getElementById("aboutGradBg");
+  gbg.style.background=`radial-gradient(ellipse at 20% 30%,rgba(${col},.18),transparent 50%),radial-gradient(ellipse at 80% 70%,rgba(${col},.1),transparent 50%),linear-gradient(140deg,#04070e,#080d18)`;
+
+  // accent line
+  document.getElementById("aboutAccentLine").style.background=`linear-gradient(90deg,${colHex},transparent)`;
+
+  // avatar
+  const av=document.getElementById("aboutAvatar");
+  av.style.background=`rgba(${col},.1)`;
+  av.style.border=`2px solid rgba(${col},.3)`;
+  av.style.boxShadow=`0 0 22px rgba(${col},.2)`;
+
+  // role
+  document.getElementById("aboutRoleLine").style.color=colHex;
+  document.getElementById("aboutRoleLine").textContent=lang==="ru"?"Motion + Dev обучение":"Motion + Dev Learning";
+
+  // desc
+  document.getElementById("aboutDesc").textContent=lang==="ru"
+    ?"Этот сайт создан чтобы показать — мир After Effects и программирования не скучный, а крутой. Здесь ты можешь попробовать оба направления через игры, квизы и реальные факты."
+    :"This site was built to show that After Effects and software development are not boring — they're awesome. Explore both worlds through games, quizzes and real facts.";
+
+  // email color
+  document.getElementById("aboutEmail").style.color=colHex;
+
+  // built with
+  document.getElementById("aboutBuilt").textContent=lang==="ru"
+    ?"Сделано с ❤️  на чистом HTML + CSS + JS"
+    :"Built with ❤️  in pure HTML + CSS + JS";
+
+  modal.classList.remove("hidden");
+}
+document.getElementById("aboutBtn").onclick=openAbout;
+document.getElementById("aboutCloseBtn").onclick=()=>document.getElementById("aboutModal").classList.add("hidden");
+document.getElementById("aboutModal").onclick=e=>{if(e.target===document.getElementById("aboutModal"))document.getElementById("aboutModal").classList.add("hidden");}
+
+
+/* ===================================================
+   ADMIN / DEVELOPER PANEL
+   Secret code: Andreykaa11
+   Trigger: type "admin" on keyboard, OR double-dblclick lang button
+=================================================== */
+const ADMIN_CODE="Andreykaa11";
+let adminLogs=[];
+
+function adminLog(msg){
+  const t=new Date().toLocaleTimeString();
+  adminLogs.push("["+t+"] "+msg);
+  if(adminLogs.length>60)adminLogs.shift();
+  const el=document.getElementById("dbg-console");
+  if(el){el.innerHTML=adminLogs.map(l=>"<div>"+l+"</div>").join("");el.scrollTop=el.scrollHeight;}
+}
+
+// Intercept console.log and window errors
+(function(){
+  const _orig=console.log.bind(console);
+  console.log=function(...a){
+    _orig(...a);
+    try{adminLog([...a].map(x=>typeof x==="object"?JSON.stringify(x):String(x)).join(" "));}catch(e){}
+  };
+  window.onerror=(msg,_src,line)=>{adminLog("❌ ERROR: "+msg+" (line "+line+")");return false;};
+  window.onunhandledrejection=ev=>{adminLog("❌ PROMISE: "+ev.reason);};
+})();
+
+function showAdminLogin(){
+  const el=document.getElementById("adminLogin");
+  el.style.display="flex";
+  document.getElementById("adminCodeInput").value="";
+  document.getElementById("adminCodeErr").textContent="";
+  setTimeout(()=>document.getElementById("adminCodeInput").focus(),120);
+}
+
+function checkAdminCode(){
+  const val=document.getElementById("adminCodeInput").value;
+  if(val===ADMIN_CODE){
+    document.getElementById("adminLogin").style.display="none";
+    openAdminPanel();
+  } else {
+    document.getElementById("adminCodeErr").textContent="❌ Wrong code / Неверный код";
+    document.getElementById("adminCodeInput").value="";
+    setTimeout(()=>document.getElementById("adminCodeInput").focus(),50);
+  }
+}
+
+function adminTab(btn,name){
+  document.querySelectorAll(".adm-tab").forEach(b=>b.classList.remove("active"));
+  document.querySelectorAll(".adm-pane").forEach(p=>p.style.display="none");
+  btn.classList.add("active");
+  document.getElementById("adm-"+name).style.display="block";
+  if(name==="debug")adminRefreshDebug();
+}
+
+function adminRefreshDebug(){
+  const d=document.getElementById.bind(document);
+  d("dbg-cat").textContent=(cat||"none").toUpperCase();
+  d("dbg-lang").textContent=lang.toUpperCase();
+  d("dbg-grun").textContent=gRun?"✅ running":"⬜ stopped";
+  d("dbg-qi").textContent=qi+" / "+(aq.length||"–");
+}
+
+function openAdminPanel(){
+  adminRefreshDebug();
+  buildAdminAnswers();
+  buildAdminQuiz();
+  buildAdminGames();
+  document.getElementById("adminPanel").style.display="block";
+  adminLog("✅ Admin panel opened. World="+cat+" Lang="+lang);
+}
+
+function buildAdminAnswers(){
+  const el=document.getElementById("adminAnswerList");if(!el)return;
+  let html="";
+  // World filter buttons
+  html+=`<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+    <button class="adm-btn" id="admAnsAll" onclick="filterAdminAnswers('all')" style="background:rgba(255,255,255,.1);color:#fff">ALL / ВСЕ</button>
+    <button class="adm-btn" id="admAnsAe" onclick="filterAdminAnswers('ae')">🎬 AE Only</button>
+    <button class="adm-btn" id="admAnsDev" onclick="filterAdminAnswers('dev')">💻 DEV Only</button>
+  </div>`;
+  ["ae","dev"].forEach(world=>{
+    const col=world==="ae"?"#7dd8ff":"#00ff88";
+    const icon=world==="ae"?"🎬":"💻";
+    const worldName=world==="ae"?"After Effects":"Software Dev";
+    html+=`<div class="adm-world-block" data-world="${world}">
+      <div style="display:flex;align-items:center;gap:10px;font-size:10px;color:${col};font-family:'Orbitron',sans-serif;font-weight:700;letter-spacing:2px;margin:18px 0 12px;padding:10px 14px;background:rgba(255,255,255,.03);border-left:3px solid ${col};border-radius:0 8px 8px 0">
+        <span style="font-size:16px">${icon}</span>
+        <div>
+          <div>${worldName.toUpperCase()} QUIZ</div>
+          <div style="font-size:8px;opacity:.5;font-weight:400;letter-spacing:1px">CORRECT ANSWERS / ПРАВИЛЬНЫЕ ОТВЕТЫ (${QD[world].length} questions)</div>
+        </div>
+      </div>`;
+    QD[world].forEach((q,i)=>{
+      const a=q.a[q.c];
+      html+=`<div class="adm-qrow" style="border-left:2px solid ${col}33">
+        <div class="adm-qnum" style="color:${col}">Q${i+1} / ${QD[world].length}</div>
+        <div class="adm-qtext">🇷🇺 ${q.q.ru}<br><span style="color:rgba(255,255,255,.4)">🇬🇧 ${q.q.en}</span></div>
+        <div style="margin-top:8px;padding:8px 12px;background:rgba(0,0,0,.3);border-radius:7px;border-left:2px solid ${col}">
+          <div style="font-size:10px;color:${col};font-weight:700;margin-bottom:2px">✅ RU: ${a.ru}</div>
+          <div style="font-size:10px;color:${col};opacity:.75">✅ EN: ${a.en}</div>
+        </div>
+        <div style="margin-top:5px;font-size:9px;color:rgba(255,255,255,.28);line-height:1.5">💡 ${q.i.ru}</div>
+      </div>`;
+    });
+    html+=`</div>`;
+  });
+  el.innerHTML=html;
+  window._filterAdminWorld='all';
+}
+function filterAdminAnswers(world){
+  window._filterAdminWorld=world;
+  document.querySelectorAll(".adm-world-block").forEach(el=>{
+    el.style.display=(world==="all"||el.dataset.world===world)?"block":"none";
+  });
+  ["admAnsAll","admAnsAe","admAnsDev"].forEach(id=>{
+    const btn=document.getElementById(id);
+    if(btn)btn.style.background=
+      (id==="admAnsAll"&&world==="all")||(id==="admAnsAe"&&world==="ae")||(id==="admAnsDev"&&world==="dev")
+        ?"rgba(255,255,255,.18)":"rgba(0,255,100,.08)";
+  });
+}
+
+function buildAdminQuiz(){
+  const el=document.getElementById("adminQuizFull");if(!el)return;
+  let html=`<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+    <button class="adm-btn" onclick="filterAdminQuiz('all')" style="background:rgba(255,255,255,.1);color:#fff">ALL / ВСЕ</button>
+    <button class="adm-btn" onclick="filterAdminQuiz('ae')">🎬 AE</button>
+    <button class="adm-btn" onclick="filterAdminQuiz('dev')">💻 DEV</button>
+  </div>`;
+  ["ae","dev"].forEach(world=>{
+    const col=world==="ae"?"#7dd8ff":"#00ff88";
+    const icon=world==="ae"?"🎬":"💻";
+    html+=`<div class="adm-quiz-block" data-world="${world}">
+      <div style="display:flex;align-items:center;gap:10px;font-size:10px;color:${col};font-family:'Orbitron',sans-serif;font-weight:700;letter-spacing:2px;margin:18px 0 12px;padding:10px 14px;background:rgba(255,255,255,.03);border-left:3px solid ${col};border-radius:0 8px 8px 0">
+        <span style="font-size:16px">${icon}</span>
+        <div><div>${world.toUpperCase()} — ALL QUESTIONS & EXPLANATIONS</div></div>
+      </div>`;
+    QD[world].forEach((q,i)=>{
+      html+=`<div class="adm-qrow" style="border-left:2px solid ${col}33">
+        <div class="adm-qnum" style="color:${col}">Q${i+1}</div>
+        <div class="adm-qtext">🇷🇺 ${q.q.ru}<br><span style="color:rgba(255,255,255,.38)">🇬🇧 ${q.q.en}</span></div>
+        <div class="adm-ans">${q.a.map((a,ai)=>`<span class="adm-ans-opt${ai===q.c?" ok":""}">${ai===q.c?"✅ ":""}${a.ru} / ${a.en}</span>`).join("")}</div>
+        <div style="margin-top:8px;font-size:10px;color:rgba(255,255,255,.35);line-height:1.6;padding:8px;background:rgba(0,0,0,.2);border-radius:6px">💡 RU: ${q.i.ru}<br><span style="opacity:.75">💡 EN: ${q.i.en}</span></div>
+      </div>`;
+    });
+    html+=`</div>`;
+  });
+  el.innerHTML=html;
+}
+function filterAdminQuiz(world){
+  document.querySelectorAll(".adm-quiz-block").forEach(el=>{
+    el.style.display=(world==="all"||el.dataset.world===world)?"block":"none";
+  });
+}
+
+function buildAdminGames(){
+  const el=document.getElementById("adminGamesData");if(!el)return;
+  const gamesRef=[
+    {name:"AE G3 — Layer Sorter",col:"#7dd8ff",data:[
+      "Level 1: Composition → Import Media → Add Layers → Set Keyframes → Easy Ease → Render",
+      "Level 2: Opacity → Scale → Position → Rotation → Anchor Point → Expression",
+      "Level 3: Solid → Shape Layer → Text Layer → Null Object → Adjustment Layer → Camera",
+      "Level 4: Timeline → Composition → Graph Editor → Effects & Presets → Render Queue",
+    ]},
+    {name:"AE G4 — Reaction (Hotkeys)",col:"#c8b4ff",data:[
+      "P = POSITION | S = SCALE | R = ROTATION | T = OPACITY (not O!) | A = ANCHOR POINT",
+    ]},
+    {name:"AE G5 — Motion Builder",col:"#ffb880",data:[
+      "Fade out → OPACITY + KEYFRAME",
+      "Movement → POSITION + KEYFRAME",
+      "Random shake → EXPRESSION + WIGGLE",
+      "Clip by shape → MASK + SHAPE LAYER",
+      "Smooth motion → EASY EASE + GRAPH EDITOR",
+      "Global effect → ADJUSTMENT LAYER + EFFECT",
+    ]},
+    {name:"DEV G3 — Code Sorter",col:"#00ff88",data:[
+      "function greet: fn declaration → return → }",
+      "if/else: if(cond){ → body → }else{ → body → }",
+      "for loop: for(init;cond;step){ → body → }",
+      "forEach: array → .forEach(fn => { → body → });",
+      "async: async fn → await fetch → await .json() → return → }",
+      "class: class Name{ → constructor(){ → property → } → }",
+    ]},
+    {name:"DEV G4 — What Outputs?",col:"#60e8ff",data:[
+      "1+2*3=7 | '5'+3='53' | typeof undefined='undefined'",
+      "[1,2,3].length=3 | 2>1?'yes':'no'='yes' | Boolean('')=false",
+      "Math.max(1,2,3)=3 | (x=>x*2)(5)=10 | null==undefined=true",
+    ]},
+    {name:"DEV G5 — Debug Quest",col:"#dd88ff",data:[
+      "Bug 1: return a-b → should be a+b",
+      "Bug 2: const reassign → use let",
+      "Bug 3: i<=3 extra iteration → should be i<3",
+      "Bug 4: no return → result = undefined",
+      "Bug 5: missing await before fetch",
+      "Bug 6: = is assignment → use === for comparison",
+      "Bug 7: arr[3] out of bounds → use arr[arr.length-1]",
+    ]},
+  ];
+  let html="";
+  gamesRef.forEach(g=>{
+    html+=`<div class="adm-qrow" style="border-color:${g.col}22">
+      <div style="color:${g.col};font-family:'Orbitron',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:10px">${g.name}</div>
+      ${g.data.map(d=>`<div style="font-size:11px;color:rgba(255,255,255,.62);margin-bottom:4px;line-height:1.6">▸ ${d}</div>`).join("")}
+    </div>`;
+  });
+  el.innerHTML=html;
+}
+
+// === Triggers to open admin ===
+// 1. Type "admin" anywhere on the page
+let _adminTyped="";
+document.addEventListener("keydown",ev=>{
+  if(ev.target.tagName==="INPUT"||ev.target.tagName==="TEXTAREA")return;
+  _adminTyped=((_adminTyped+ev.key.toLowerCase()).slice(-8));
+  if(_adminTyped.endsWith("admin"))showAdminLogin();
+});
+// 2. Double-double-click on the lang button
+let _admClicks=0,_admTimer=null;
+document.getElementById("langBtn").addEventListener("dblclick",()=>{
+  _admClicks++;
+  if(_admTimer)clearTimeout(_admTimer);
+  _admTimer=setTimeout(()=>{_admClicks=0;},900);
+  if(_admClicks>=2)showAdminLogin();
+});
+
+/* ===================================================
+   INIT
+=================================================== */
+applyLang();
+</script>
+<script>
+/* =====================================================
+   quiz.js — Quiz, Facts, Result, Game Launcher
+   Dependencies: app.js
+===================================================== */
+
+function startQuiz(){
+  aq=QD[cat]; qi=0;sc=0;xp=0;combo=0;
+  updateHUD(); show("quiz"); loadQ();
+}
+function loadQ(){
+  const q=aq[qi];
+  document.getElementById("question").textContent=q.q[lang];
+  const ae=document.getElementById("answers"); ae.innerHTML="";
+  document.getElementById("ansInfo").style.display="none";
+  document.getElementById("nextBtn").classList.add("hidden");
+  document.getElementById("qFill").style.width=(qi/aq.length*100)+"%";
+  document.getElementById("progVal").textContent=(qi+1)+"/"+aq.length;
+  q.a.forEach((a,i)=>{
+    const b=document.createElement("button"); b.className="ans-btn";
+    b.textContent=a[lang]; b.onclick=()=>checkA(i); ae.appendChild(b);
+  });
+}
+function checkA(i){
+  const q=aq[qi];
+  document.querySelectorAll(".ans-btn").forEach(b=>b.disabled=true);
+  const ok=i===q.c;
+  document.querySelectorAll(".ans-btn")[i].classList.add(ok?"correct":"wrong");
+  document.querySelectorAll(".ans-btn")[q.c].classList.add("correct");
+  if(ok){sc++;combo++;xp+=10*combo;showCombo(combo);if(cat==="ae")spawnAEP();else devGlitch();}
+  else combo=0;
+  updateHUD();
+
+  // Rich explanation card
+  const ie=document.getElementById("ansInfo");
+  ie.className="ans-info";
+  ie.style.display="block";
+  const correctLbl=q.a[q.c][lang];
+  const wrongLbl=i!==q.c?q.a[i][lang]:null;
+  ie.innerHTML=`
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">
+      <span style="font-size:16px">${ok?"✅":"❌"}</span>
+      <span style="font-family:'Orbitron',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;color:${ok?"#00ff88":"#ff6060"}">
+        ${ok?(lang==="ru"?"ПРАВИЛЬНО!":"CORRECT!"):(lang==="ru"?"НЕВЕРНО":"WRONG")}
+      </span>
+    </div>
+    ${!ok?`<div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:rgba(255,255,255,.45);margin-bottom:6px">${lang==="ru"?"Ты выбрал:":"You chose:"} <span style="color:#ff6060;text-decoration:line-through">${wrongLbl}</span> &nbsp;→&nbsp; <span style="color:#00ff88">${correctLbl}</span></div>`:""}
+    <div style="font-size:12px;line-height:1.7;color:rgba(255,255,255,.75)">${q.i[lang]}</div>
+  `;
+  document.getElementById("nextBtn").classList.remove("hidden");
+}
+document.getElementById("nextBtn").onclick=()=>{qi++;if(qi<aq.length)loadQ();else finishQuiz();}
+document.getElementById("retryBtn").onclick=startQuiz;
+function updateHUD(){
+  document.getElementById("xpVal").textContent=xp;
+  document.getElementById("comboVal").textContent=combo;
+}
+function showCombo(c){
+  if(c<2) return;
+  const el=document.createElement("div"); el.className="combo-pop";
+  el.style.color=cat==="dev"?"#00ff88":"#7dd8ff";
+  el.textContent=c>=5?"🔥 COMBO x"+c:"⚡ x"+c;
+  document.body.appendChild(el); setTimeout(()=>el.remove(),800);
+}
+function finishQuiz(){
+  const p=sc/aq.length;
+  const ri=p<.3?0:p<.5?1:p<.7?2:p<1?3:4;
+  document.getElementById("resScore").textContent=sc+"/"+aq.length;
+  document.getElementById("resRank").textContent=T[lang]["rank_"+ri];
+  document.getElementById("resMsg").textContent=T[lang]["rmsg_"+ri];
+  document.getElementById("resXP").textContent=T[lang]["rxp"]+" "+xp+" XP";
+  show("result");
+}
+
+/* ===================================================
+   FACTS
+=================================================== */
+function showFacts(){
+  const ft=document.getElementById("factsTitle");
+  ft.textContent=T[lang]["facts_"+cat+"_title"];
+  ft.style.background=cat==="ae"?"linear-gradient(135deg,#7dd8ff,#fff)":"linear-gradient(135deg,#00ff88,#00e5ff)";
+  ft.style.webkitBackgroundClip="text"; ft.style.webkitTextFillColor="transparent"; ft.style.backgroundClip="text";
+  const wrap=document.getElementById("factsWrap"); wrap.innerHTML="";
+  FACTS[cat][lang].forEach((f,i)=>{
+    const d=document.createElement("div"); d.className="fact-card";
+    d.style.animation=`fadeUp .5s ease ${i*.07}s both`;
+    d.innerHTML=`<div class="fact-n">ФАКТ ${String(i+1).padStart(2,"0")}</div><div class="fact-t">${f.t}</div><div class="fact-b">${f.b}</div>`;
+    wrap.appendChild(d);
+  });
+  show("factsScreen");
+}
+
+/* ===================================================
+   AE FX
+=================================================== */
+function spawnAEP(){
+  const cols=["#3c8fff","#00cfff","#7dd8ff","#c8e8ff"];
+  for(let i=0;i<6;i++){
+    const p=document.createElement("div"); p.className="aep";
+    p.style.cssText=`left:${15+Math.random()*70}%;top:${20+Math.random()*50}%;width:${5+Math.random()*8}px;height:${5+Math.random()*8}px;background:${cols[Math.floor(Math.random()*cols.length)]};animation-delay:${Math.random()*.4}s`;
+    document.body.appendChild(p); setTimeout(()=>p.remove(),3800);
+  }
+}
+function devGlitch(){
+  const o=document.getElementById("glitchOverlay");
+  o.style.background="rgba(0,255,100,.05)"; o.style.opacity="1";
+  setTimeout(()=>o.style.opacity="0",300);
+  document.body.classList.add("shaking");
+  setTimeout(()=>document.body.classList.remove("shaking"),280);
+}
+
+/* ===================================================
+   MATRIX — твой оригинальный код, исправленный
+=================================================== */
+const MC=document.getElementById("matrixBg");
+const MX=MC.getContext("2d");
+const codeLines=[
+  "function build(){}","while(true){learn()}","commit(code)","debug(error)",
+  "ship(app)","async await","class Mind{}","export default skill",
+  "npm install future","const dev = new You()","if(hard){keep_going()}",
+  "git push origin main","return success;","let potential=Infinity",
+  "fetch('/api/future')","useState(learning)","console.log('🔥')",
+  ".map(x => x*2)","const arr = []","import React",
+];
+const crashWords=["DISCIPLINE","BUILD_MORE","DEBUG_REALITY","CREATE_CODE","NO_SHORTCUTS","STAY_FOCUSED","SHIP_IT","READ_DOCS","GIT_COMMIT"];
+let crashMode=false;
+
+function resizeMC(){
+  MC.width=window.innerWidth;
+  MC.height=window.innerHeight;
+}
+resizeMC();
+window.addEventListener("resize",resizeMC);
+
+const FS=18;
+let drops=[];
+function resetDrops(){drops=Array(Math.floor(window.innerWidth/FS)).fill(1);}
+resetDrops();
+window.addEventListener("resize",resetDrops);
+
+function clearMatrix(){MX.clearRect(0,0,MC.width,MC.height);}
+
+// Main matrix draw loop — interval 100ms like original
+setInterval(()=>{
+  if(!document.body.classList.contains("theme-dev")){
+    MX.clearRect(0,0,MC.width,MC.height); return;
+  }
+  MX.fillStyle="rgba(0,0,0,.18)";
+  MX.fillRect(0,0,MC.width,MC.height);
+
+  for(let i=0;i<drops.length;i++){
+    if(crashMode){
+      const ch=crashWords[Math.floor(Math.random()*crashWords.length)][Math.floor(Math.random()*10)]||"X";
+      MX.fillStyle="#ff2a2a";
+      MX.font="28px 'Share Tech Mono',monospace";
+      MX.shadowColor="#ff0000"; MX.shadowBlur=24;
+      MX.fillText(ch,i*FS,drops[i]*FS);
+    } else {
+      const text=codeLines[Math.floor(Math.random()*codeLines.length)];
+      // Multiple green shades for depth
+      const shade=i%4===0?"#33ff88":i%4===1?"#00cc55":i%4===2?"#00ff88":"#009944";
+      MX.fillStyle=shade;
+      MX.font="14px 'Share Tech Mono',monospace";
+      MX.shadowBlur=0;
+      MX.fillText(text,i*FS,drops[i]*FS);
+    }
+    if(drops[i]*FS>MC.height&&Math.random()>.975) drops[i]=0;
+    drops[i]++;
+  }
+  MX.shadowBlur=0;
+},100);
+
+// Crash words — original timing
+
+
+/* ===================================================
+   HOME BACKGROUND — animated dual-world particles
+=================================================== */
+(function(){
+  const hbc=document.getElementById("homeBg");
+  if(!hbc)return;
+  const hbx=hbc.getContext("2d");
+  let hw=0,hh=0;
+  function rsz(){hw=hbc.width=hbc.offsetWidth||window.innerWidth;hh=hbc.height=hbc.offsetHeight||window.innerHeight;}
+  rsz();window.addEventListener("resize",rsz);
+
+  // Split: left=AE blue, right=DEV green
+  const pts=Array.from({length:55},(_,i)=>({
+    x:Math.random(),y:Math.random(),
+    vx:(Math.random()-.5)*.0004,vy:(Math.random()-.5)*.0004,
+    r:1.5+Math.random()*3,
+    phase:Math.random()*Math.PI*2,
+    speed:.5+Math.random(),
+    side:i<28?0:1, // 0=AE, 1=DEV
+    col:i<28?"60,140,255":"0,255,100",
+  }));
+  // connection lines
+  let t=0;
+  function drawHome(){
+    if(document.body.classList.contains("theme-ae")||document.body.classList.contains("theme-dev")){
+      hbx.clearRect(0,0,hw,hh);requestAnimationFrame(drawHome);return;
+    }
+    hbx.clearRect(0,0,hw,hh);
+    t+=.01;
+    // background gradient
+    const bg=hbx.createLinearGradient(0,0,hw,hh);
+    bg.addColorStop(0,"#07070e");bg.addColorStop(.5,"#0a0a18");bg.addColorStop(1,"#07070e");
+    hbx.fillStyle=bg;hbx.fillRect(0,0,hw,hh);
+    // divider glow
+    hbx.fillStyle="rgba(255,255,255,.04)";
+    hbx.fillRect(hw/2-1,0,2,hh);
+
+    // AE left glow
+    const aeg=hbx.createRadialGradient(hw*.25,hh*.5,0,hw*.25,hh*.5,hw*.3);
+    aeg.addColorStop(0,"rgba(30,100,255,.07)");aeg.addColorStop(1,"transparent");
+    hbx.fillStyle=aeg;hbx.fillRect(0,0,hw,hh);
+    // DEV right glow
+    const dg=hbx.createRadialGradient(hw*.75,hh*.5,0,hw*.75,hh*.5,hw*.3);
+    dg.addColorStop(0,"rgba(0,200,80,.05)");dg.addColorStop(1,"transparent");
+    hbx.fillStyle=dg;hbx.fillRect(0,0,hw,hh);
+
+    pts.forEach(p=>{
+      p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0||p.x>1) p.vx*=-1;if(p.y<0||p.y>1) p.vy*=-1;
+      const px=p.x*hw,py=p.y*hh;
+      const alpha=.2+.15*Math.sin(t*p.speed+p.phase);
+      hbx.beginPath();hbx.arc(px,py,p.r,0,Math.PI*2);
+      hbx.fillStyle=`rgba(${p.col},${alpha})`;hbx.fill();
+    });
+    // connections within same side
+    for(let i=0;i<pts.length;i++){
+      for(let j=i+1;j<pts.length;j++){
+        if(pts[i].side!==pts[j].side) continue;
+        const dx=(pts[i].x-pts[j].x)*hw,dy=(pts[i].y-pts[j].y)*hh;
+        const dist=Math.sqrt(dx*dx+dy*dy);
+        if(dist<100){
+          hbx.strokeStyle=`rgba(${pts[i].col},${.06*(1-dist/100)})`;
+          hbx.lineWidth=.5;
+          hbx.beginPath();hbx.moveTo(pts[i].x*hw,pts[i].y*hh);
+          hbx.lineTo(pts[j].x*hw,pts[j].y*hh);hbx.stroke();
+        }
+      }
+    }
+    requestAnimationFrame(drawHome);
+  }
+  drawHome();
+})();
+
+/* ===================================================
+   AE BACKGROUND — cinematic aurora night sky
+=================================================== */
+(function(){
+  const ac=document.getElementById("aeBg");
+  if(!ac)return;
+  const ax=ac.getContext("2d");
+  let aw=0,ah=0;
+  function rsz(){aw=ac.width=window.innerWidth;ah=ac.height=window.innerHeight;}
+  rsz();window.addEventListener("resize",rsz);
+
+  const stars=Array.from({length:180},()=>({
+    x:Math.random(),y:Math.random()*.7,
+    r:.3+Math.random()*1.4,
+    twinkle:Math.random()*Math.PI*2,
+    speed:.006+Math.random()*.02,
+  }));
+  const bands=[
+    {y:.15,amp:.055,freq:1.4,speed:.0007,col:[30,120,255],alpha:.22,w:220},
+    {y:.26,amp:.04, freq:1.9,speed:.0009,col:[0,180,255], alpha:.16,w:170},
+    {y:.36,amp:.065,freq:1.2,speed:.0005,col:[80,50,255], alpha:.14,w:190},
+    {y:.21,amp:.045,freq:2.2,speed:.0011,col:[0,220,200], alpha:.10,w:150},
+    {y:.31,amp:.055,freq:1.7,speed:.0008,col:[50,100,255],alpha:.12,w:160},
+  ];
+  const shoots=Array.from({length:5},(_,i)=>({x:0,y:0,vx:.004,vy:.002,alpha:0,active:false,timer:i*90+Math.random()*200}));
+  let t=0;
+
+  function drawAE(){
+    if(!document.body.classList.contains("theme-ae")){ax.clearRect(0,0,aw,ah);requestAnimationFrame(drawAE);return;}
+    ax.clearRect(0,0,aw,ah);
+    t+=.012;
+
+    // Deep space gradient
+    const sky=ax.createLinearGradient(0,0,0,ah);
+    sky.addColorStop(0,"#010818");
+    sky.addColorStop(.32,"#020f2c");
+    sky.addColorStop(.65,"#040c1e");
+    sky.addColorStop(1,"#060a18");
+    ax.fillStyle=sky;ax.fillRect(0,0,aw,ah);
+
+    // Aurora bands
+    bands.forEach(b=>{
+      const baseY=b.y*ah;
+      for(let x=0;x<aw;x+=4){
+        const waveY=baseY+Math.sin(x/aw*Math.PI*b.freq*3+t*b.speed*1000)*b.amp*ah;
+        const alpha=b.alpha*(.45+.55*Math.sin(x/aw*Math.PI*2.5+t*b.speed*600));
+        const g=ax.createLinearGradient(x,waveY-b.w,x,waveY+b.w);
+        g.addColorStop(0,"transparent");
+        g.addColorStop(.5,`rgba(${b.col[0]},${b.col[1]},${b.col[2]},${alpha})`);
+        g.addColorStop(1,"transparent");
+        ax.fillStyle=g;ax.fillRect(x,waveY-b.w,4,b.w*2);
+      }
+    });
+
+    // Stars
+    stars.forEach(s=>{
+      const tw=.35+.65*Math.sin(t*s.speed*80+s.twinkle);
+      ax.beginPath();ax.arc(s.x*aw,s.y*ah,s.r*(0.6+0.4*tw),0,Math.PI*2);
+      ax.fillStyle=`rgba(210,225,255,${.55*tw})`;ax.fill();
+    });
+
+    // Shooting stars
+    shoots.forEach(s=>{
+      s.timer--;
+      if(s.timer<=0&&!s.active){s.active=true;s.x=Math.random()*.55;s.y=Math.random()*.28;s.vx=.004+Math.random()*.006;s.vy=.001+Math.random()*.003;s.alpha=1;s.timer=250+Math.random()*500;}
+      if(s.active){
+        s.x+=s.vx;s.y+=s.vy;s.alpha-=.011;
+        if(s.alpha<=0){s.active=false;return;}
+        const len=aw*.1;
+        const ex=s.x*aw-s.vx/s.vx*len,ey=s.y*ah-s.vy/s.vx*len;
+        const g=ax.createLinearGradient(s.x*aw,s.y*ah,ex,ey);
+        g.addColorStop(0,`rgba(220,240,255,${s.alpha})`);g.addColorStop(1,"transparent");
+        ax.strokeStyle=g;ax.lineWidth=1.5;ax.beginPath();ax.moveTo(s.x*aw,s.y*ah);ax.lineTo(ex,ey);ax.stroke();
+      }
+    });
+
+    // Horizon glow
+    const hg=ax.createLinearGradient(0,ah*.5,0,ah);
+    hg.addColorStop(0,"transparent");hg.addColorStop(1,"rgba(15,50,160,.12)");
+    ax.fillStyle=hg;ax.fillRect(0,0,aw,ah);
+
+    // Large nebula
+    const ng=ax.createRadialGradient(aw*.5,ah*.85,0,aw*.5,ah*.85,aw*.55);
+    ng.addColorStop(0,"rgba(20,70,200,.1)");ng.addColorStop(1,"transparent");
+    ax.fillStyle=ng;ax.fillRect(0,0,aw,ah);
+
+    requestAnimationFrame(drawAE);
+  }
+  drawAE();
+})();
+
+/* ===================================================
+   DEV HEX GRID — decorative animated hex grid
+=================================================== */
+(function(){
+  const hc=document.getElementById("devGrid");
+  if(!hc)return;
+  const hx=hc.getContext("2d");
+  let hw=0,hh=0;
+  function rsz(){hw=hc.width=window.innerWidth;hh=hc.height=window.innerHeight;}
+  rsz();window.addEventListener("resize",rsz);
+  let t=0;
+  function drawHex(){
+    if(!document.body.classList.contains("theme-dev")){hx.clearRect(0,0,hw,hh);requestAnimationFrame(drawHex);return;}
+    hx.clearRect(0,0,hw,hh);
+    t+=0.008;
+    const S=44; // hex size
+    const W=S*2,H=Math.sqrt(3)*S;
+    const cols2=Math.ceil(hw/W)+2,rows2=Math.ceil(hh/H)+2;
+    for(let row=0;row<rows2;row++){
+      for(let col=0;col<cols2;col++){
+        const offset=col%2?H/2:0;
+        const cx2=col*W*0.75-S,cy2=row*H+offset-H/2;
+        const dist=Math.sqrt(Math.pow((cx2-hw/2)/hw,2)+Math.pow((cy2-hh/2)/hh,2));
+        const pulse=Math.sin(t+dist*8+col*.3+row*.5);
+        const alpha=(.02+pulse*.015)*Math.max(0,1-dist*1.5);
+        if(alpha<=0)continue;
+        hx.beginPath();
+        for(let k=0;k<6;k++){
+          const ang=Math.PI/180*(60*k-30);
+          const px3=cx2+S*.88*Math.cos(ang),py3=cy2+S*.88*Math.sin(ang);
+          k===0?hx.moveTo(px3,py3):hx.lineTo(px3,py3);
+        }
+        hx.closePath();
+        hx.strokeStyle=`rgba(0,255,100,${alpha})`;
+        hx.lineWidth=.8;hx.stroke();
+      }
+    }
+    requestAnimationFrame(drawHex);
+  }
+  drawHex();
+})();
+
+/* ===================================================
+   INFO MODAL
+=================================================== */
+const modal=document.getElementById("infoModal");
+document.getElementById("btnAE").onclick=()=>openModal("ae");
+document.getElementById("btnDEV").onclick=()=>openModal("dev");
+document.getElementById("modalCloseBtn").onclick=()=>modal.classList.add("hidden");
+modal.onclick=e=>{if(e.target===modal)modal.classList.add("hidden");}
+function openModal(type){
+  const box=document.getElementById("modalBox");
+  box.classList.remove("ae","dev"); box.classList.add(type);
+  document.getElementById("modalTag").textContent=T[lang][type+"_tag"];
+  document.getElementById("modalTitle").textContent=T[lang][type+"_title"];
+  document.getElementById("modalText").textContent=T[lang][type+"_text"];
+  const ul=document.getElementById("modalList"); ul.innerHTML="";
+  T[lang][type+"_list"].forEach(item=>{const li=document.createElement("li");li.textContent=item;ul.appendChild(li);});
+  document.getElementById("modalCloseBtn").textContent=T[lang]["close_btn"];
+  const acb=document.getElementById("aboutCloseBtn");if(acb)acb.textContent=lang==="ru"?"ЗАКРЫТЬ ✕":"CLOSE ✕";
+  // sweep
+  box.querySelectorAll(".sweep").forEach(e=>e.remove());
+  const sw=document.createElement("div"); sw.className="sweep"; box.appendChild(sw);
+  modal.classList.remove("hidden");
+}
+
+/* ===================================================
+   MASCOT
+=================================================== */
+function getMascotFacts(){
+  const ctx=cat||"home"; return MF[ctx][lang];
+}
+function showMascotFact(){
+  const list=getMascotFacts();
+  document.getElementById("bubText").textContent=list[mfIdx%list.length];
+  document.getElementById("bubLbl").textContent=T[lang]["bub_lbl"];
+  document.getElementById("bubNext").textContent=T[lang]["bub_next"];
+  document.getElementById("bubClose").textContent=T[lang]["bub_close"];
+  const b=document.getElementById("mascotBubble");
+  b.classList.remove("hidden");
+  b.style.animation="none"; void b.offsetWidth; b.style.animation="bubIn .4s cubic-bezier(.2,.8,.2,1)";
+}
+document.getElementById("mascotBtn").onclick=()=>{
+  const b=document.getElementById("mascotBubble");
+  if(!b.classList.contains("hidden")){b.classList.add("hidden");return;}
+  mfList=getMascotFacts(); mfIdx=Math.floor(Math.random()*mfList.length);
+  showMascotFact();
+};
+document.getElementById("bubNext").onclick=()=>{mfIdx++;showMascotFact();}
+document.getElementById("bubClose").onclick=()=>document.getElementById("mascotBubble").classList.add("hidden");
+setTimeout(()=>{mfList=getMascotFacts();mfIdx=0;showMascotFact();},4500);
+
+/* ===================================================
+   GAME ENGINE
+=================================================== */
+const GC=document.getElementById("gameCanvas");
+const GX=GC.getContext("2d");
+const GW=420,GH=500;
+let pX=GW/2; // player input X
+
+GC.addEventListener("mousemove",e=>{const r=GC.getBoundingClientRect();pX=(e.clientX-r.left)*(GW/r.width);});
+GC.addEventListener("touchmove",e=>{e.preventDefault();const r=GC.getBoundingClientRect();pX=(e.touches[0].clientX-r.left)*(GW/r.width);},{passive:false});
+
+function sScore(s){document.getElementById("gScore").textContent=s}
+function sLives(l){document.getElementById("gLives").textContent=l}
+function sLvl(l){document.getElementById("gLevelPill").textContent="LVL "+l} // Fixed: was sLvlPill
+
+// Fix: correct element id reference
+function setLvlPill(l){document.getElementById("gLvlPill").textContent="LVL "+l}
+
+function stopGame(){
+  gRun=false;
+  if(gAnim){cancelAnimationFrame(gAnim);gAnim=null;}
+  GX.clearRect(0,0,GW,GH);
+  document.removeEventListener("keydown",_kb);
+  GC.onclick=null; GC._t1=false; GC._t2=false; GC._t3=false; GC._t4=false;
+}
+let _kb=null;
+
+function rr(x,y,w,h,r,fill,stroke,lw){
+  GX.beginPath();GX.moveTo(x+r,y);GX.lineTo(x+w-r,y);GX.arcTo(x+w,y,x+w,y+r,r);
+  GX.lineTo(x+w,y+h-r);GX.arcTo(x+w,y+h,x+w-r,y+h,r);
+  GX.lineTo(x+r,y+h);GX.arcTo(x,y+h,x,y+h-r,r);
+  GX.lineTo(x,y+r);GX.arcTo(x,y,x+r,y,r);GX.closePath();
+  if(fill){GX.fillStyle=fill;GX.fill();}
+  if(stroke){GX.strokeStyle=stroke;GX.lineWidth=lw||1;GX.stroke();}
+}
+function gOver(score,tip){
+  GX.fillStyle="rgba(0,0,0,.9)";GX.fillRect(0,0,GW,GH);
+  GX.fillStyle=cat==="ae"?"#7dd8ff":"#00ff88";
+  GX.font="bold 30px 'Orbitron',monospace";GX.textAlign="center";
+  GX.fillText("GAME OVER",GW/2,GH/2-52);
+  GX.fillStyle="#fff";GX.font="bold 20px 'Orbitron',monospace";
+  GX.fillText("Score: "+score,GW/2,GH/2-4);
+  if(tip){GX.fillStyle="rgba(255,255,255,.45)";GX.font="11px 'Share Tech Mono',monospace";GX.fillText(tip,GW/2,GH/2+38);}
+  GX.fillStyle="rgba(255,255,255,.22)";GX.font="10px 'Orbitron',monospace";
+  GX.fillText("← Back to exit",GW/2,GH/2+80);GX.textAlign="left";
+}
+
+function launchGame(n,k){
+  gameId=n; stopGame(); show("game");
+  document.getElementById("gameHint").textContent=T[lang][cat+"_g"+n+"_hint"];
+  pX=GW/2;
+  if(cat==="ae"){if(k==="g5"){startAEG5();}else{[,startAEG1,startAEG2,startAEG3,startAEG4][n]();}}
+  else{if(k==="g5"){startDEVG5();}else{[,startDEVG1,startDEVG2,startDEVG3,startDEVG4][n]();}}
+}
+
+/* ====================================================
+   ██████╗ AE GAME 1 — KEYFRAME CATCHER
+   Ловишь кейфреймы (◆◇✦★) с названиями параметров
+   Учишься: Position Scale Rotation Opacity
+===================================================== */
+</script>
+<script>
+/* =====================================================
+   game.js — All 10 Mini-Games (AE G1-G5, DEV G1-G5)
+   Dependencies: app.js, quiz.js
+===================================================== */
+
+/* Touch→click bridge: makes canvas games work on mobile */
+(function(){
+  document.addEventListener('DOMContentLoaded', function(){
+    var gc = document.getElementById('gameCanvas');
+    if (!gc || gc._tb) return;
+    gc._tb = true;
+    gc.addEventListener('touchstart', function(e){ e.preventDefault(); }, {passive:false});
+    gc.addEventListener('touchend', function(e){
+      e.preventDefault();
+      var t = e.changedTouches[0];
+      gc.dispatchEvent(new MouseEvent('click', {clientX:t.clientX, clientY:t.clientY, bubbles:true}));
+    }, {passive:false});
+  });
+})();
+
+function startAEG1(){
+  const good=[{s:"◆",l:"Position",c:"#3c8fff"},{s:"◇",l:"Scale",c:"#7dd8ff"},{s:"✦",l:"Rotation",c:"#00cfff"},{s:"★",l:"Opacity",c:"#c8e8ff"}];
+  const bad=[{s:"✖",l:"Error",c:"#ff3c3c"},{s:"⚠",l:"Glitch",c:"#ff8800"}];
+  let items=[],frame=0,score=0,lives=3,lvl=1,speed=1.6,px={x:210,w:72};
+  sScore(0);sLives(3);setLvlPill(1);pX=GW/2;
+  let msg="",mt=0,errCount=0;
+
+  function loop(){
+    if(!gRun)return; gAnim=requestAnimationFrame(loop); frame++;
+    GX.clearRect(0,0,GW,GH);
+    const bg=GX.createLinearGradient(0,0,0,GH);bg.addColorStop(0,"#060d18");bg.addColorStop(1,"#0a1628");GX.fillStyle=bg;GX.fillRect(0,0,GW,GH);
+    GX.strokeStyle="rgba(40,110,255,.04)";GX.lineWidth=1;
+    for(let x=0;x<GW;x+=40){GX.beginPath();GX.moveTo(x,0);GX.lineTo(x,GH);GX.stroke();}
+    for(let y=0;y<GH;y+=40){GX.beginPath();GX.moveTo(0,y);GX.lineTo(GW,y);GX.stroke();}
+
+    if(frame%Math.max(34,65-score*.3)===0){
+      const pool=[...good,...good,...bad];
+      const pk=pool[Math.floor(Math.random()*pool.length)];
+      items.push({x:28+Math.random()*(GW-80),y:-22,s:pk.s,l:pk.l,c:pk.c,g:good.includes(pk),sp:speed+Math.random()*1.3,rot:0,rs:(Math.random()-.5)*.06});
+    }
+    items=items.filter(it=>{
+      it.y+=it.sp;it.rot+=it.rs;
+      GX.save();GX.translate(it.x+13,it.y);GX.rotate(it.rot);
+      GX.fillStyle=it.c;GX.shadowColor=it.c;GX.shadowBlur=14;
+      GX.font="24px serif";GX.textAlign="center";GX.fillText(it.s,0,0);GX.shadowBlur=0;
+      GX.fillStyle=it.c+"aa";GX.font="bold 8px 'Orbitron',monospace";GX.fillText(it.l,0,15);
+      GX.restore();
+      const py2=GH-30;
+      if(it.y>py2-10&&it.y<py2+14&&it.x+8>px.x&&it.x-8<px.x+px.w){
+        if(it.g){score+=10;sScore(score);msg="✅ "+it.l+" — поймал!";mt=85;spawnAEP();}
+        else{lives--;sLives(lives);msg="❌ "+it.l+" — промах";mt=65;errCount++;}
+        return false;
+      }
+      if(it.y>GH+20){if(it.g){lives--;sLives(lives);}return false;}
+      return true;
+    });
+    px.x+=(pX-px.w/2-px.x)*.18;px.x=Math.max(0,Math.min(GW-px.w,px.x));
+    const py2=GH-30;
+    const pg=GX.createLinearGradient(px.x,0,px.x+px.w,0);pg.addColorStop(0,"#3c8fff");pg.addColorStop(1,"#00cfff");
+    GX.fillStyle=pg;GX.shadowColor="#3c8fff";GX.shadowBlur=16;
+    rr(px.x,py2,px.w,8,4,pg,null);GX.shadowBlur=0;
+    GX.fillStyle="#fff";GX.fillRect(px.x+px.w/2-1,py2-4,2,4);
+    if(mt>0){mt--;GX.fillStyle=msg.startsWith("✅")?"rgba(125,216,255,.85)":"rgba(255,110,110,.85)";GX.font="11px 'Share Tech Mono',monospace";GX.textAlign="center";GX.fillText(msg,GW/2,GH-5);}
+    GX.fillStyle="rgba(100,170,255,.35)";GX.font="9px 'Share Tech Mono',monospace";GX.textAlign="left";
+    GX.fillText("CATCH: ◆Position ◇Scale ✦Rotation ★Opacity  |  DODGE: ✖⚠",5,13);
+    if(errCount>=3){GX.fillStyle="rgba(255,220,0,.7)";GX.font="9px 'Share Tech Mono',monospace";GX.textAlign="center";GX.fillText("💡 Совет: двигай мышь под кейфрейм, избегай красных!",GW/2,GH-20);}
+    if(score>0&&score%80===0&&lvl<6){lvl++;speed+=.3;setLvlPill(lvl);}
+    if(lives<=0){stopGame();gOver(score,"Catch the keyframes!");}
+  }
+  gRun=true;loop();
+}
+
+/* ====================================================
+   ██████╗ AE GAME 2 — AE СЛОВА
+   Буквы AE-терминов падают сверху — нажимай их!
+   Учишься: названия параметров и инструментов AE
+===================================================== */
+function startAEG2(){
+  const terms=[
+    {word:"KEYFRAME",hint:"Ключевой кадр — основа любой анимации"},
+    {word:"POSITION",hint:"P — параметр положения слоя"},
+    {word:"OPACITY",hint:"T — прозрачность слоя (0-100%)"},
+    {word:"ROTATION",hint:"R — угол поворота слоя"},
+    {word:"SCALE",hint:"S — масштаб/размер слоя"},
+    {word:"WIGGLE",hint:"wiggle(f,a) — Expression для случайного движения"},
+    {word:"PRECOMP",hint:"Pre-compose — группировка слоёв в Comp"},
+    {word:"EASING",hint:"Плавный вход/выход анимации"},
+    {word:"MASK",hint:"Маска — ограничивает видимую область"},
+    {word:"MOTION",hint:"Motion — движение. Motion Design — дизайн в движении"},
+  ];
+  let items=[],frame=0,score=0,lives=3,lvl=1,speed=0.7,currentTerm=null,charIdx=0;
+  sScore(0);sLives(3);setLvlPill(1);
+  let msg="",mt=0;
+
+  function pickTerm(){
+    currentTerm=terms[Math.floor(Math.random()*terms.length)];charIdx=0;
+  }
+  pickTerm();
+
+  // spawn one char at a time from current term
+  let spawnTimer=0,spawnInterval=90;
+
+  _kb=e=>{
+    if(!gRun||!currentTerm) return;
+    const ch=e.key.toUpperCase();
+    let hit=false;
+    items=items.filter(it=>{
+      if(!hit&&it.ch===ch&&it.y>40){
+        hit=true;score+=5;sScore(score);
+        msg="✅ "+it.ch+" → "+currentTerm.hint;mt=90;spawnAEP();
+        return false;
+      }
+      return true;
+    });
+    if(!hit&&e.key.length===1&&e.key.match(/[a-zA-Z]/)){lives--;sLives(lives);msg="❌ нет такой буквы";mt=50;}
+  };
+  document.addEventListener("keydown",_kb);
+
+  function loop(){
+    if(!gRun){document.removeEventListener("keydown",_kb);return;}
+    gAnim=requestAnimationFrame(loop);frame++;spawnTimer++;
+    GX.clearRect(0,0,GW,GH);
+    const bg=GX.createLinearGradient(0,0,0,GH);bg.addColorStop(0,"#060d18");bg.addColorStop(1,"#0a1628");GX.fillStyle=bg;GX.fillRect(0,0,GW,GH);
+
+    if(spawnTimer>=spawnInterval&&currentTerm){
+      spawnTimer=0;
+      if(charIdx<currentTerm.word.length){
+        const ch=currentTerm.word[charIdx];charIdx++;
+        const colors=["#3c8fff","#00cfff","#7dd8ff","#c8b4ff","#80d4ff"];
+        items.push({ch,x:28+Math.random()*(GW-80),y:-30,color:colors[Math.floor(Math.random()*colors.length)],sp:speed+Math.random()*1});
+      } else {pickTerm();spawnInterval=Math.max(25,spawnInterval-2);}
+    }
+    items=items.filter(it=>{
+      it.y+=it.sp;
+      GX.fillStyle=it.color;GX.font="bold 32px 'Share Tech Mono',monospace";
+      GX.shadowColor=it.color;GX.shadowBlur=18;GX.textAlign="left";
+      GX.fillText(it.ch,it.x,it.y);GX.shadowBlur=0;
+      if(it.y>GH-68){lives--;sLives(lives);return false;}
+      return true;
+    });
+
+    // Show current word progress
+    if(currentTerm){
+      GX.fillStyle="rgba(100,170,255,.3)";GX.font="bold 13px 'Orbitron',monospace";GX.textAlign="center";
+      GX.fillText("TERM: "+currentTerm.word,GW/2,28);
+      GX.fillStyle="rgba(100,170,255,.18)";GX.font="10px 'Share Tech Mono',monospace";
+      GX.fillText(currentTerm.hint,GW/2,44);
+      // spelled chars
+      const w=currentTerm.word;
+      const tot=w.length*(22+4)-4;const sx=(GW-tot)/2;
+      for(let i=0;i<w.length;i++){
+        const done=i<charIdx;
+        GX.fillStyle=done?"rgba(100,170,255,.6)":"rgba(255,255,255,.12)";
+        rr(sx+i*26,52,22,26,4,done?"rgba(40,110,255,.3)":"rgba(255,255,255,.05)",done?"rgba(40,110,255,.5)":"rgba(255,255,255,.12)");
+        GX.fillStyle=done?"#7dd8ff":"rgba(255,255,255,.3)";
+        GX.font="bold 13px 'Orbitron',monospace";GX.textAlign="center";
+        GX.fillText(w[i],sx+i*26+11,52+17);
+      }
+    }
+
+    // On-screen keyboard
+    const kbY=GH-54;const row="QWERTYUIOPASDFGHJKLZXCVBNM".split("");
+    const kw=28,kh=24;const rows=[row.slice(0,10),row.slice(10,19),row.slice(19)];
+    rows.forEach((r,ri)=>{
+      const rw2=r.length*(kw+2)-2;const kx0=(GW-rw2)/2;
+      r.forEach((k,ci)=>{
+        const kx=kx0+ci*(kw+2),ky=kbY-ri*(kh+3);
+        const act=items.some(it=>it.ch===k);
+        GX.shadowColor=act?"#3c8fff":"transparent";GX.shadowBlur=act?10:0;
+        rr(kx,ky,kw,kh,3,act?"rgba(40,110,255,.25)":"rgba(255,255,255,.05)",act?"rgba(40,110,255,.6)":"rgba(255,255,255,.12)");
+        GX.fillStyle=act?"#7dd8ff":"rgba(255,255,255,.4)";GX.font="bold 11px 'Share Tech Mono',monospace";GX.textAlign="center";
+        GX.fillText(k,kx+kw/2,ky+kh/2+4);GX.shadowBlur=0;
+      });
+    });
+
+    if(mt>0){mt--;GX.fillStyle=msg.startsWith("✅")?"rgba(125,216,255,.85)":"rgba(255,110,110,.85)";GX.font="11px 'Share Tech Mono',monospace";GX.textAlign="center";GX.fillText(msg,GW/2,kbY-70);}
+
+    // tap
+    if(!GC._t1){GC._t1=true;GC.addEventListener("click",e=>{
+      const r=GC.getBoundingClientRect();const cx=(e.clientX-r.left)*(GW/r.width),cy=(e.clientY-r.top)*(GH/r.height);
+      const kbY2=GH-54;const row2="QWERTYUIOPASDFGHJKLZXCVBNM".split("");
+      const kw2=28,kh2=24;const rows2=[row2.slice(0,10),row2.slice(10,19),row2.slice(19)];
+      rows2.forEach((rw,ri)=>{
+        const rw2w=rw.length*(kw2+2)-2;const kx0=(GW-rw2w)/2;
+        rw.forEach((k,ci)=>{
+          const kx=kx0+ci*(kw2+2),ky=kbY2-ri*(kh2+3);
+          if(cx>kx&&cx<kx+kw2&&cy>ky&&cy<ky+kh2)document.dispatchEvent(new KeyboardEvent("keydown",{key:k,bubbles:true}));
+        });
+      });
+    });}
+
+    if(score>0&&score%60===0&&lvl<6){lvl++;speed+=(lvl<4?.15:.3);spawnInterval=Math.max(22,spawnInterval-8);setLvlPill(lvl);}
+    if(lives<=0){stopGame();document.removeEventListener("keydown",_kb);gOver(score,"Remember AE terms!");}
+  }
+  gRun=true;loop();
+}
+
+/* ====================================================
+   ██████╗ AE GAME 3 — LAYER SORTER
+   Кликай слои в правильном порядке AE pipeline
+   Учишься: правильный порядок процессов в AE
+===================================================== */
+function startAEG3(){
+  const levels=[
+    {title:{ru:"Порядок создания анимации",en:"Animation Creation Order"},
+     hint:{ru:"Сначала Comp → медиа → слои → кейфреймы → плавность → рендер",en:"Start with Comp → media → layers → keyframes → ease → render"},
+     items:["1. Composition","2. Import Media","3. Add Layers","4. Set Keyframes","5. Easy Ease","6. Render"],
+     tip:{ru:"✅ Так создаётся любая AE анимация!",en:"✅ This is how every AE animation is made!"}},
+    {title:{ru:"Параметры — от простого к сложному",en:"Parameters — Easiest to Hardest"},
+     hint:{ru:"Opacity → проще всего, Expression → самый сложный",en:"Opacity → easiest, Expression → most advanced"},
+     items:["Opacity","Scale","Position","Rotation","Anchor Point","Expression"],
+     tip:{ru:"✅ Opacity — простой, Expression — продвинутый",en:"✅ Opacity = simple, Expression = advanced"}},
+    {title:{ru:"Типы слоёв AE",en:"AE Layer Types"},
+     hint:{ru:"Solid — базовый, Camera — продвинутый слой",en:"Solid = basic layer, Camera = advanced layer"},
+     items:["Solid","Shape Layer","Text Layer","Null Object","Adjustment Layer","Camera"],
+     tip:{ru:"✅ Каждый тип слоя имеет своё назначение!",en:"✅ Each layer type has its own purpose!"}},
+    {title:{ru:"Ключевые инструменты AE",en:"Key AE Tools"},
+     hint:{ru:"Timeline — основа работы, Render Queue — финальный шаг",en:"Timeline is the core, Render Queue is the final step"},
+     items:["Timeline","Composition","Graph Editor","Effects & Presets","Render Queue"],
+     tip:{ru:"✅ Эти панели — ядро After Effects",en:"✅ These panels are the core of After Effects"}},
+  ];
+  let lvlIdx=0,score=0,lives=3,g3ErrCount=0;
+  sScore(0);sLives(3);setLvlPill(1);
+
+  function startLevel(){
+    const lv=levels[lvlIdx%levels.length];
+    const items=[...lv.items].sort(()=>Math.random()-.5);
+    let selected=[],done=false,msg="",mt=0,showCorrect=false,showTimer=0;
+
+    const lvTitle=lv.title[lang]||lv.title.ru;
+    const lvHint=lv.hint[lang]||lv.hint.ru;
+    const lvTip=lv.tip[lang]||lv.tip.ru;
+    const lvInst=lang==="ru"?"Кликай в правильном порядке →":"Click in the correct order →";
+    const showHint=g3ErrCount>=2;
+
+    function draw(){
+      if(!gRun)return; gAnim=requestAnimationFrame(draw);
+      if(mt>0)mt--;
+      if(showCorrect){showTimer++;if(showTimer>90){showCorrect=false;showTimer=0;startLevel();return;}}
+      GX.clearRect(0,0,GW,GH);
+      const bg=GX.createLinearGradient(0,0,0,GH);bg.addColorStop(0,"#060d18");bg.addColorStop(1,"#0a1628");GX.fillStyle=bg;GX.fillRect(0,0,GW,GH);
+
+      GX.fillStyle="#7dd8ff";GX.font="bold 11px 'Orbitron',monospace";GX.textAlign="center";
+      GX.shadowColor="#3c8fff";GX.shadowBlur=8;GX.fillText(lvTitle.toUpperCase(),GW/2,22);GX.shadowBlur=0;
+      GX.fillStyle="rgba(100,170,255,.3)";GX.font="9px 'Share Tech Mono',monospace";
+      GX.fillText(lvInst,GW/2,36);
+
+      // hint panel after 2 errors
+      const topY=showHint?72:46;
+      if(showHint){
+        rr(10,42,GW-20,24,5,"rgba(255,200,0,.07)","rgba(255,200,0,.28)");
+        GX.fillStyle="rgba(255,215,0,.75)";GX.font="9px 'Share Tech Mono',monospace";GX.textAlign="center";
+        GX.fillText("💡 "+lvHint,GW/2,58);
+      }
+
+      const iH=40,iGap=6,totalH=items.length*(iH+iGap)-iGap;
+      const startY=topY+(GH-topY-60-totalH)/2;
+
+      items.forEach((item,i)=>{
+        const y=startY+i*(iH+iGap);
+        const isSelected=selected.includes(item);
+        const selIdx=selected.indexOf(item);
+        const isCorrect=showCorrect&&lv.items[selIdx]===item;
+        const isWrong=showCorrect&&isSelected&&!isCorrect;
+        let fill,stroke;
+        if(isCorrect){fill="rgba(0,255,100,.2)";stroke="#00ff88";}
+        else if(isWrong){fill="rgba(255,50,50,.2)";stroke="#ff4444";}
+        else if(isSelected){fill="rgba(40,110,255,.25)";stroke="rgba(60,140,255,.7)";}
+        else{fill="rgba(255,255,255,.04)";stroke="rgba(100,170,255,.2)";}
+        rr(20,y,GW-40,iH,9,fill,stroke,isSelected?2:1);
+        if(isSelected&&!showCorrect){
+          GX.fillStyle="rgba(60,140,255,.5)";GX.font="bold 10px 'Orbitron',monospace";GX.textAlign="left";
+          GX.fillText((selIdx+1)+".",26,y+iH/2+4);
+        }
+        const prefix=isCorrect?"✅ ":isWrong?"❌ ":"";
+        GX.fillStyle=isCorrect?"#00ff88":isWrong?"#ff6060":isSelected?"#fff":"rgba(200,220,255,.8)";
+        GX.font="10px 'Share Tech Mono',monospace";GX.textAlign="left";
+        GX.fillText(prefix+item,isSelected?42:28,y+iH/2+4);
+        if(!isSelected){GX.fillStyle="rgba(100,170,255,.2)";GX.textAlign="right";GX.font="10px serif";GX.fillText("▶",GW-24,y+iH/2+4);}
+      });
+
+      if(selected.length>0&&!showCorrect){
+        GX.fillStyle="rgba(100,170,255,.3)";GX.font="9px 'Orbitron',monospace";GX.textAlign="left";
+        GX.fillText((lang==="ru"?"Порядок: ":"Order: ")+selected.map((_,ii)=>ii+1).join("→"),16,GH-10);
+      }
+      if(mt>0&&!showCorrect){GX.fillStyle=msg.startsWith("✅")?"rgba(125,216,255,.9)":"rgba(255,110,110,.9)";GX.font="bold 11px 'Share Tech Mono',monospace";GX.textAlign="center";GX.fillText(msg,GW/2,GH-24);}
+      if(showCorrect){
+        GX.fillStyle="rgba(0,0,0,.55)";GX.fillRect(0,GH-44,GW,44);
+        GX.fillStyle="#7dd8ff";GX.font="bold 11px 'Share Tech Mono',monospace";GX.textAlign="center";
+        GX.shadowColor="#3c8fff";GX.shadowBlur=6;GX.fillText(lvTip,GW/2,GH-24);GX.shadowBlur=0;
+        GX.fillStyle="rgba(0,255,100,.6)";GX.font="9px 'Orbitron',monospace";
+        GX.fillText(lang==="ru"?"✅ ВЕРНО! +20":"✅ CORRECT! +20",GW/2,GH-8);
+      }
+    }
+
+    GC.onclick=e=>{
+      if(showCorrect||done) return;
+      const r=GC.getBoundingClientRect();const cy=(e.clientY-r.top)*(GH/r.height);
+      const iH2=40,iGap2=6,totalH2=items.length*(iH2+iGap2)-iGap2;
+      const topY2=showHint?72:46;
+      const startY2=topY2+(GH-topY2-60-totalH2)/2;
+      items.forEach((item,i)=>{
+        const y=startY2+i*(iH2+iGap2);
+        if(cy>y&&cy<y+iH2&&!selected.includes(item)) selected.push(item);
+      });
+      if(selected.length===items.length){
+        let ok=true;
+        selected.forEach((item,i)=>{if(item!==lv.items[i])ok=false;});
+        if(ok){score+=20;sScore(score);showCorrect=true;g3ErrCount=0;lvlIdx++;setLvlPill(Math.min(lvlIdx+1,6));spawnAEP();}
+        else{lives--;sLives(lives);g3ErrCount++;msg=lang==="ru"?"❌ Не тот порядок":"❌ Wrong order";mt=65;selected=[];if(lives<=0){stopGame();gOver(score,"Learn AE order!");}}
+      }
+    };
+    gRun=true;draw();
+  }
+  startLevel();
+}
+
+/* ====================================================
+   ██████╗ AE GAME 4 — REACTION — Press the param!
+   Появляется название — нажимай горячую клавишу!
+   Учишься: горячие клавиши Position/Scale/Rotation/Opacity/Time
+===================================================== */
+function startAEG4(){
+  const params=[
+    {name:"POSITION",key:"P",color:"#3c8fff",desc:"P — позиция слоя"},
+    {name:"SCALE",key:"S",color:"#7dd8ff",desc:"S — масштаб слоя"},
+    {name:"ROTATION",key:"R",color:"#c8b4ff",desc:"R — поворот слоя"},
+    {name:"OPACITY",key:"T",color:"#80d4ff",desc:"T — прозрачность (не O!)"},
+    {name:"ANCHOR",key:"A",color:"#00cfff",desc:"A — точка привязки"},
+  ];
+  let score=0,lives=3,lvl=1,current=null,timer=0,maxTimer=200,streak=0;
+  sScore(0);sLives(3);setLvlPill(1);
+  let msg="",mt=0;
+
+  function nextParam(){current=params[Math.floor(Math.random()*params.length)];timer=maxTimer;}
+
+  _kb=e=>{
+    if(!gRun||!current)return;
+    if(e.key.toUpperCase()===current.key){
+      score+=10+streak*2;sScore(score);streak++;msg="✅ "+current.desc;mt=70;spawnAEP();nextParam();
+    } else if(e.key.length===1&&e.key.match(/[a-zA-Z]/)){
+      lives--;sLives(lives);streak=0;msg="❌ Нет! "+current.name+" = ["+current.key+"]";mt=70;nextParam();
+    }
+  };
+  document.addEventListener("keydown",_kb);
+  nextParam();
+
+  // on-screen buttons
+  function loop(){
+    if(!gRun){document.removeEventListener("keydown",_kb);return;}
+    gAnim=requestAnimationFrame(loop);
+    if(mt>0)mt--;
+    timer--;
+    if(timer<=0){lives--;sLives(lives);streak=0;msg="⏰ Слишком медленно!";mt=65;nextParam();}
+
+    GX.clearRect(0,0,GW,GH);
+    const bg=GX.createLinearGradient(0,0,0,GH);bg.addColorStop(0,"#060d18");bg.addColorStop(1,"#0a1628");GX.fillStyle=bg;GX.fillRect(0,0,GW,GH);
+
+    // Timer arc
+    const cx2=GW/2,cy2=130,rad=55;
+    GX.beginPath();GX.arc(cx2,cy2,rad,0,Math.PI*2);GX.strokeStyle="rgba(255,255,255,.07)";GX.lineWidth=8;GX.stroke();
+    GX.beginPath();GX.arc(cx2,cy2,rad,-Math.PI/2,-Math.PI/2+Math.PI*2*(timer/maxTimer));
+    GX.strokeStyle=current?current.color:"#3c8fff";GX.lineWidth=8;GX.lineCap="round";GX.stroke();
+
+    if(current){
+      GX.fillStyle=current.color;GX.font="bold 28px 'Orbitron',monospace";GX.textAlign="center";GX.shadowColor=current.color;GX.shadowBlur=20;
+      GX.fillText(current.name,cx2,cy2+8);GX.shadowBlur=0;
+      GX.fillStyle="rgba(255,255,255,.35)";GX.font="10px 'Share Tech Mono',monospace";
+      GX.fillText("Нажми горячую клавишу!",cx2,cy2+30);
+    }
+    GX.fillStyle="rgba(255,200,0,.5)";GX.font="10px 'Orbitron',monospace";GX.textAlign="center";
+    GX.fillText("🔥 Streak: "+streak,cx2,cy2-70);
+
+    // 5 buttons
+    const bW=68,bH=56,bGap=8;const totalBW=params.length*(bW+bGap)-bGap;const bx0=(GW-totalBW)/2;
+    params.forEach((p,i)=>{
+      const bx=bx0+i*(bW+bGap),by=230;
+      const isActive=current&&p.name===current.name;
+      GX.shadowColor=p.color;GX.shadowBlur=isActive?20:0;
+      rr(bx,by,bW,bH,10,isActive?p.color+"33":"rgba(255,255,255,.05)",p.color+(isActive?"dd":"44"),isActive?2:1);
+      GX.fillStyle=isActive?p.color:"rgba(255,255,255,.5)";
+      GX.font="bold 18px 'Orbitron',monospace";GX.textAlign="center";
+      GX.fillText("["+p.key+"]",bx+bW/2,by+bH/2-4);GX.font="8px 'Orbitron',monospace";
+      GX.fillText(p.name.slice(0,4),bx+bW/2,by+bH/2+12);GX.shadowBlur=0;
+    });
+
+    // Tap buttons
+    if(!GC._t4){GC._t4=true;GC.addEventListener("click",e=>{
+      const r=GC.getBoundingClientRect();const cx3=(e.clientX-r.left)*(GW/r.width),cy3=(e.clientY-r.top)*(GH/r.height);
+      const bW2=68,bH2=56,bGap2=8;const totalBW2=params.length*(bW2+bGap2)-bGap2;const bx02=(GW-totalBW2)/2;
+      params.forEach((p,i)=>{
+        const bx=bx02+i*(bW2+bGap2),by=230;
+        if(cx3>bx&&cx3<bx+bW2&&cy3>by&&cy3<by+bH2)document.dispatchEvent(new KeyboardEvent("keydown",{key:p.key,bubbles:true}));
+      });
+    });}
+
+    // Hint list
+    GX.fillStyle="rgba(255,255,255,.22)";GX.font="10px 'Share Tech Mono',monospace";GX.textAlign="left";
+    params.forEach((p,i)=>{GX.fillStyle=p.color+"88";GX.fillText("["+p.key+"] "+p.name+" — "+p.desc.split("—")[1] ? p.desc.split("—")[1].trim() : p.desc,20,325+i*18);});
+
+    if(mt>0){GX.fillStyle=msg.startsWith("✅")?"rgba(125,216,255,.9)":"rgba(255,110,110,.9)";GX.font="bold 11px 'Share Tech Mono',monospace";GX.textAlign="center";GX.fillText(msg,GW/2,GH-12);}
+
+    if(score>0&&score%50===0&&lvl<6){lvl++;maxTimer=Math.max(80,maxTimer-15);setLvlPill(lvl);}
+    if(lives<=0){stopGame();document.removeEventListener("keydown",_kb);gOver(score,"Know your hotkeys!");}
+  }
+  gRun=true;loop();
+}
+
+
+/* ====================================================
+   AE GAME 5 — MOTION BUILDER 🎭
+   Собери правильные инструменты для эффекта
+   Понимаешь: какие параметры нужны для каждого эффекта
+===================================================== */
+function startAEG5(){
+  const tasks=[
+    {goal:{ru:"Сделай объект исчезающим",en:"Fade out an object"},
+     correct:["OPACITY","KEYFRAME"],
+     pool:["OPACITY","KEYFRAME","ROTATION","SCALE","POSITION","MASK"],
+     explain:{ru:"Opacity 100%→0% + два кейфрейма = плавное исчезновение",en:"Opacity 100%→0% + two keyframes = smooth fade out"}},
+    {goal:{ru:"Анимируй движение слева направо",en:"Move object left to right"},
+     correct:["POSITION","KEYFRAME"],
+     pool:["POSITION","KEYFRAME","OPACITY","MASK","ROTATION","EXPRESSION"],
+     explain:{ru:"Position X: начало → конец + кейфреймы = движение",en:"Position X: start → end + keyframes = movement"}},
+    {goal:{ru:"Создай случайное дрожание (без кейфреймов!)",en:"Create random shake (no keyframes!)"},
+     correct:["EXPRESSION","WIGGLE"],
+     pool:["EXPRESSION","WIGGLE","KEYFRAME","SCALE","MASK","ROTATION"],
+     explain:{ru:"wiggle(5,20) в поле Position — дрожание без единого кейфрейма!",en:"wiggle(5,20) in Position field — shake with zero keyframes!"}},
+    {goal:{ru:"Скрой часть слоя по форме",en:"Hide part of layer by shape"},
+     correct:["MASK","SHAPE LAYER"],
+     pool:["MASK","SHAPE LAYER","OPACITY","EXPRESSION","ROTATION","KEYFRAME"],
+     explain:{ru:"Mask обрезает видимую область слоя по форме",en:"Mask clips the visible area of a layer by shape"}},
+    {goal:{ru:"Плавная (не роботичная) анимация",en:"Smooth (non-robotic) animation"},
+     correct:["EASY EASE","GRAPH EDITOR"],
+     pool:["EASY EASE","GRAPH EDITOR","WIGGLE","MASK","PRE-COMP","KEYFRAME"],
+     explain:{ru:"Easy Ease (F9) + Graph Editor = живое физическое движение",en:"Easy Ease (F9) + Graph Editor = alive, physical movement"}},
+    {goal:{ru:"Один эффект применить ко ВСЕМУ проекту",en:"Apply ONE effect to the ENTIRE project"},
+     correct:["ADJUSTMENT LAYER","EFFECT"],
+     pool:["ADJUSTMENT LAYER","EFFECT","NULL OBJECT","MASK","KEYFRAME","SOLID"],
+     explain:{ru:"Adjustment Layer: один эффект → применяется ко всем слоям ниже",en:"Adjustment Layer: one effect → applies to all layers below"}},
+  ];
+  let tIdx=0,score=0,lives=3;
+  sScore(0);sLives(3);setLvlPill(1);
+
+  function doTask(){
+    const task=tasks[tIdx%tasks.length];
+    const needed=task.correct.length;
+    let chosen=[],showR=false,rTimer=0,msg="",mt=0;
+    const TW=116,TH=34,TG=5,COLS=3;
+    const gridW=COLS*(TW+TG)-TG;
+
+    function draw(){
+      if(!gRun)return;gAnim=requestAnimationFrame(draw);if(mt>0)mt--;
+      if(showR){rTimer++;if(rTimer>110){showR=false;rTimer=0;tIdx++;setLvlPill(Math.min(tIdx+1,6));doTask();return;}}
+      GX.clearRect(0,0,GW,GH);
+      const gbg=GX.createLinearGradient(0,0,0,GH);gbg.addColorStop(0,"#060d18");gbg.addColorStop(1,"#081c38");GX.fillStyle=gbg;GX.fillRect(0,0,GW,GH);
+
+      // Header
+      const goalTxt=task.goal[lang]||task.goal.ru;
+      GX.fillStyle="#7dd8ff";GX.font="bold 10px 'Orbitron',monospace";GX.textAlign="center";
+      GX.shadowColor="#3c8fff";GX.shadowBlur=8;
+      GX.fillText((lang==="ru"?"🎯 ЗАДАЧА: ":"🎯 GOAL: ")+goalTxt.toUpperCase(),GW/2,16);GX.shadowBlur=0;
+      GX.fillStyle="rgba(100,170,255,.32)";GX.font="9px 'Share Tech Mono',monospace";
+      GX.fillText(lang==="ru"?"Выбери "+needed+" нужных инструмента (кликни):":"Select "+needed+" correct tools (click):",GW/2,30);
+
+      // Chosen bar
+      rr(10,36,GW-20,30,6,"rgba(30,100,255,.06)","rgba(30,100,255,.15)");
+      GX.fillStyle="rgba(100,170,255,.3)";GX.font="8px 'Orbitron',monospace";GX.textAlign="left";
+      GX.fillText((lang==="ru"?"ВЫБРАНО ":"CHOSEN ")+chosen.length+"/"+needed+":",16,50);
+      chosen.forEach((t,ii)=>{
+        rr(16+ii*85,52,80,12,3,"rgba(60,140,255,.3)","#3c8fff");
+        GX.fillStyle="#7dd8ff";GX.font="bold 7px 'Share Tech Mono',monospace";GX.textAlign="center";
+        GX.fillText(t,16+ii*85+40,62);
+      });
+
+      // Token grid
+      const gx0=(GW-gridW)/2,gy0=76;
+      task.pool.forEach((tok,ii)=>{
+        const col=ii%COLS,row=Math.floor(ii/COLS);
+        const tx=gx0+col*(TW+TG),ty=gy0+row*(TH+TG);
+        const isCh=chosen.includes(tok);
+        const isCor=showR&&task.correct.includes(tok);
+        const isWr=showR&&isCh&&!task.correct.includes(tok);
+        const f2=isCor&&isCh?"rgba(0,255,100,.22)":isWr?"rgba(255,60,60,.18)":isCh?"rgba(60,140,255,.22)":"rgba(255,255,255,.04)";
+        const s2=isCor&&isCh?"#00ff88":isWr?"#ff4444":isCh?"#3c8fff":"rgba(100,170,255,.2)";
+        rr(tx,ty,TW,TH,7,f2,s2,isCh?2:1);
+        GX.fillStyle=isCh?"#7dd8ff":isCor?"#00ff88":"rgba(200,220,255,.7)";
+        GX.font="bold 9px 'Share Tech Mono',monospace";GX.textAlign="center";
+        GX.fillText((showR&&task.correct.includes(tok)?"✅ ":"")+tok,tx+TW/2,ty+TH/2+4);
+      });
+
+      if(showR){
+        GX.fillStyle="rgba(0,0,0,.6)";GX.fillRect(0,GH-60,GW,60);
+        GX.fillStyle="#7dd8ff";GX.font="10px 'Share Tech Mono',monospace";GX.textAlign="center";
+        GX.shadowColor="#3c8fff";GX.shadowBlur=5;
+        GX.fillText(task.explain[lang]||task.explain.ru,GW/2,GH-36);GX.shadowBlur=0;
+        GX.fillStyle="rgba(0,255,100,.7)";GX.font="10px 'Orbitron',monospace";
+        GX.fillText(lang==="ru"?"✅ ВЕРНО! +20":"✅ CORRECT! +20",GW/2,GH-16);
+      }
+      if(mt>0&&!showR){GX.fillStyle="rgba(255,110,110,.9)";GX.font="10px 'Share Tech Mono',monospace";GX.textAlign="center";GX.fillText(msg,GW/2,GH-8);}
+    }
+
+    GC.onclick=e=>{
+      if(showR)return;
+      const r2=GC.getBoundingClientRect();
+      const cx2=(e.clientX-r2.left)*(GW/r2.width),cy2=(e.clientY-r2.top)*(GH/r2.height);
+      const gx02=(GW-gridW)/2,gy02=76;
+      task.pool.forEach((tok,ii)=>{
+        const col=ii%COLS,row=Math.floor(ii/COLS);
+        const tx=gx02+col*(TW+TG),ty=gy02+row*(TH+TG);
+        if(cx2>tx&&cx2<tx+TW&&cy2>ty&&cy2<ty+TH){
+          if(chosen.includes(tok))chosen=chosen.filter(x=>x!==tok);
+          else if(chosen.length<needed)chosen.push(tok);
+        }
+      });
+      if(chosen.length===needed){
+        if(task.correct.every(cc=>chosen.includes(cc))){score+=20;sScore(score);showR=true;spawnAEP();}
+        else{lives--;sLives(lives);msg=lang==="ru"?"❌ Не те инструменты — попробуй снова":"❌ Wrong tools — try again";mt=75;chosen=[];}
+        if(lives<=0){stopGame();gOver(score,lang==="ru"?"Учи параметры AE!":"Learn AE parameters!");}
+      }
+    };
+    gRun=true;draw();
+  }
+  doTask();
+}
+
+/* ====================================================
+   ██████╗ DEV GAME 1 — BUG HUNT
+   Ловишь правильный код, уворачиваешься от багов
+   Учишься: различать синтаксически верный код от ошибок
+===================================================== */
+function startDEVG1(){
+  const good=[
+    {s:"function()",c:"#00ff88",d:"функция"},
+    {s:"const x=1",c:"#7CFFB2",d:"константа"},
+    {s:"return v",c:"#00e5ff",d:"возврат значения"},
+    {s:"if(ok){}",c:"#60e8ff",d:"условие"},
+    {s:".map(fn)",c:"#80ff60",d:"метод массива"},
+    {s:"async fn",c:"#40ffcc",d:"асинхр. функция"},
+    {s:"let i=0",c:"#7CFFB2",d:"переменная"},
+    {s:"arr.push",c:"#00ff88",d:"добавить в массив"},
+  ];
+  const bad=[
+    {s:"null ref",c:"#ff3c3c",d:"NullPointerError"},
+    {s:"undefind",c:"#ff6600",d:"опечатка"},
+    {s:"SyntaxErr",c:"#ff2222",d:"синтаксис!"},
+    {s:"🐛bug",c:"#ff4444",d:"баг!"},
+    {s:"var leak",c:"#ff8800",d:"var устарел"},
+  ];
+  let items=[],frame=0,score=0,lives=3,lvl=1,speed=1.8,px={x:GW/2-40,w:80};
+  sScore(0);sLives(3);setLvlPill(1);pX=GW/2;
+  let msg="",mt=0;
+
+  function loop(){
+    if(!gRun)return;gAnim=requestAnimationFrame(loop);frame++;
+    GX.clearRect(0,0,GW,GH);GX.fillStyle="#020c06";GX.fillRect(0,0,GW,GH);
+    for(let y=0;y<GH;y+=4){GX.fillStyle="rgba(0,0,0,.07)";GX.fillRect(0,y,GW,2);}
+    GX.strokeStyle="rgba(0,255,100,.04)";GX.lineWidth=1;
+    for(let x=0;x<GW;x+=32){GX.beginPath();GX.moveTo(x,0);GX.lineTo(x,GH);GX.stroke();}
+    for(let y=0;y<GH;y+=32){GX.beginPath();GX.moveTo(0,y);GX.lineTo(GW,y);GX.stroke();}
+
+    if(frame%Math.max(26,55-score*.2)===0){
+      const pool=[...good,...good,...bad];
+      const pk=pool[Math.floor(Math.random()*pool.length)];
+      items.push({...pk,x:14+Math.random()*(GW-100),y:-28,g:good.includes(pk),sp:speed+Math.random()*1.4});
+    }
+    items=items.filter(it=>{
+      it.y+=it.sp;
+      const tw=it.s.length*7.2+14;
+      GX.shadowColor=it.c;GX.shadowBlur=it.g?8:15;
+      rr(it.x,it.y,tw,22,4,it.g?"rgba(0,255,100,.1)":"rgba(255,40,40,.12)",it.c+"77");
+      GX.fillStyle=it.c;GX.font="bold 11px 'Share Tech Mono',monospace";GX.textAlign="left";
+      GX.fillText(it.s,it.x+7,it.y+15);GX.shadowBlur=0;
+      GX.fillStyle=it.c+"55";GX.font="8px 'Share Tech Mono',monospace";
+      GX.fillText(it.d,it.x+4,it.y+25);
+      const py2=GH-30;
+      if(it.y>py2-6&&it.y<py2+px.h+8&&it.x+tw/2>px.x&&it.x+tw/2<px.x+px.w){
+        if(it.g){score+=15;sScore(score);msg="✅ "+it.s+" — "+it.d;mt=75;spawnAEP();}
+        else{lives--;sLives(lives);msg="❌ "+it.s+" — "+it.d;mt=60;devGlitch();}
+        return false;
+      }
+      if(it.y>GH+20){if(it.g){lives--;sLives(lives);}return false;}
+      return true;
+    });
+    px.h=px.h||8;
+    px.x+=(pX-px.w/2-px.x)*.2;px.x=Math.max(0,Math.min(GW-px.w,px.x));
+    const py2=GH-30;
+    GX.fillStyle="#00ff88";GX.shadowColor="#00ff88";GX.shadowBlur=16;
+    GX.fillRect(px.x,py2,px.w,8);
+    GX.fillStyle="#fff";GX.shadowBlur=4;GX.fillRect(px.x+px.w/2-1,py2-4,2,4);GX.shadowBlur=0;
+    GX.fillStyle="rgba(0,255,100,.38)";GX.font="9px 'Share Tech Mono',monospace";GX.textAlign="left";
+    GX.fillText("✅ CATCH: function const let if .map() return async",5,12);
+    GX.fillStyle="rgba(255,80,80,.45)";GX.fillText("❌ DODGE: null SyntaxErr undefined 🐛 var-leak",5,24);
+    if(mt>0){mt--;GX.fillStyle=msg.startsWith("✅")?"rgba(0,255,136,.85)":"rgba(255,110,110,.85)";GX.font="11px 'Share Tech Mono',monospace";GX.textAlign="center";GX.fillText(msg,GW/2,GH-5);}
+    if(score>0&&score%100===0&&lvl<6){lvl++;speed+=.25;setLvlPill(lvl);}
+    if(lives<=0){stopGame();gOver(score,"Keep the code clean!");}
+  }
+  gRun=true;loop();
+}
+
+/* ====================================================
+   ██████╗ DEV GAME 2 — FILL THE CODE
+   Падают символы JS/Python/CSS/HTML — жми нужный!
+   Учишься: синтаксис реальных языков
+===================================================== */
+function startDEVG2(){
+  const langs=[
+    {name:"JavaScript",color:"#ffd060",items:[
+      {ch:"function",hint:"объявление функции"},
+      {ch:"const",hint:"константа (не меняется)"},
+      {ch:"let",hint:"переменная (меняется)"},
+      {ch:"return",hint:"возврат значения"},
+      {ch:"if()",hint:"условие"},
+      {ch:"=>",hint:"стрелочная функция"},
+      {ch:".map()",hint:"метод массива"},
+      {ch:"async",hint:"асинхронность"},
+    ]},
+    {name:"CSS",color:"#60e8ff",items:[
+      {ch:"display",hint:"тип отображения элемента"},
+      {ch:"flex",hint:"flexbox раскладка"},
+      {ch:"margin",hint:"внешний отступ"},
+      {ch:"padding",hint:"внутренний отступ"},
+      {ch:"color",hint:"цвет текста"},
+      {ch:"border",hint:"граница элемента"},
+    ]},
+    {name:"HTML",color:"#ff8060",items:[
+      {ch:"<div>",hint:"блочный элемент"},
+      {ch:"<p>",hint:"параграф текста"},
+      {ch:"<h1>",hint:"заголовок 1 уровня"},
+      {ch:"<img>",hint:"изображение"},
+      {ch:"<a>",hint:"ссылка"},
+      {ch:"<button>",hint:"кнопка"},
+    ]},
+    {name:"Python",color:"#80ff60",items:[
+      {ch:"def",hint:"объявление функции"},
+      {ch:"print()",hint:"вывод в консоль"},
+      {ch:"if:",hint:"условие"},
+      {ch:"for",hint:"цикл"},
+      {ch:"list()",hint:"создать список"},
+      {ch:"return",hint:"возврат значения"},
+    ]},
+  ];
+  let langIdx=0,items=[],frame=0,score=0,lives=3,lvl=1,speed=0.65;
+  sScore(0);sLives(3);setLvlPill(1);
+  let curLang=langs[0],pool=[...curLang.items];
+  let msg="",mt=0,lastHint="";
+
+  _kb=e=>{
+    if(!gRun)return;
+    const key=e.key;
+    let hit=false;
+    items=items.filter(it=>{
+      if(!hit&&it.y>40){
+        const match=it.token.toLowerCase().startsWith(key.toLowerCase())||it.token===key;
+        if(match){hit=true;score+=10;sScore(score);lastHint=it.hint;msg="✅ "+it.token+" — "+it.hint;mt=80;spawnAEP();return false;}
+      }
+      return true;
+    });
+    if(!hit&&key.length===1){lives--;sLives(lives);msg="❌ Не то — смотри на токен!";mt=50;devGlitch();}
+  };
+  document.addEventListener("keydown",_kb);
+
+  function loop(){
+    if(!gRun){document.removeEventListener("keydown",_kb);return;}
+    gAnim=requestAnimationFrame(loop);frame++;
+    GX.clearRect(0,0,GW,GH);GX.fillStyle="#020c06";GX.fillRect(0,0,GW,GH);
+    for(let y=0;y<GH;y+=4){GX.fillStyle="rgba(0,0,0,.07)";GX.fillRect(0,y,GW,2);}
+
+    if(frame%Math.max(28,88-score*.22)===0){
+      // switch lang every 60 score
+      langIdx=Math.floor(score/60)%langs.length;curLang=langs[langIdx];pool=[...curLang.items];
+      const pk=pool[Math.floor(Math.random()*pool.length)];
+      items.push({token:pk.ch,hint:pk.hint,x:20+Math.random()*(GW-120),y:-35,sp:speed+Math.random()*1.2,col:curLang.color});
+    }
+    items=items.filter(it=>{
+      it.y+=it.sp;
+      const tw=it.token.length*9+16;
+      GX.shadowColor=it.col;GX.shadowBlur=12;
+      rr(it.x,it.y,tw,26,5,it.col+"15",it.col+"88");
+      GX.fillStyle=it.col;GX.font="bold 13px 'Share Tech Mono',monospace";GX.textAlign="left";
+      GX.fillText(it.token,it.x+8,it.y+18);GX.shadowBlur=0;
+      GX.fillStyle=it.col+"66";GX.font="8px 'Share Tech Mono',monospace";
+      GX.fillText(it.hint,it.x+4,it.y+28);
+      if(it.y>GH-72){lives--;sLives(lives);devGlitch();return false;}
+      return true;
+    });
+
+    // Lang indicator
+    GX.fillStyle=curLang.color;GX.font="bold 12px 'Orbitron',monospace";GX.textAlign="center";
+    GX.shadowColor=curLang.color;GX.shadowBlur=12;
+    GX.fillText("[ "+curLang.name+" ]",GW/2,22);GX.shadowBlur=0;
+    // Progress to next lang
+    GX.fillStyle="rgba(255,255,255,.2)";GX.font="9px 'Share Tech Mono',monospace";
+    GX.fillText("смена языка через "+(60-(score%60))+" очков",GW/2,36);
+
+    // on-screen keyboard (first char of each token)
+    const kbY2=GH-56;
+    const uniqueKeys=[...new Set(curLang.items.map(it=>it.ch[0].toLowerCase()))];
+    const kw=46,kh=28;const rw2=uniqueKeys.length*(kw+4)-4;const kx0=(GW-rw2)/2;
+    uniqueKeys.forEach((k,i)=>{
+      const kx=kx0+i*(kw+4),ky=kbY2;
+      const active=items.some(it=>it.token.toLowerCase().startsWith(k));
+      GX.shadowColor=active?curLang.color:"transparent";GX.shadowBlur=active?12:0;
+      rr(kx,ky,kw,kh,5,active?curLang.color+"20":"rgba(255,255,255,.05)",active?curLang.color+"88":"rgba(255,255,255,.15)");
+      GX.fillStyle=active?curLang.color:"rgba(255,255,255,.4)";
+      GX.font="bold 12px 'Share Tech Mono',monospace";GX.textAlign="center";
+      GX.fillText(k,kx+kw/2,ky+kh/2+4);GX.shadowBlur=0;
+    });
+
+    if(!GC._t2){GC._t2=true;GC.addEventListener("click",e=>{
+      const r=GC.getBoundingClientRect();const cx2=(e.clientX-r.left)*(GW/r.width),cy2=(e.clientY-r.top)*(GH/r.height);
+      const kbY3=GH-56;const uq=[...new Set(curLang.items.map(it=>it.ch[0].toLowerCase()))];
+      const kw2=46,kh2=28;const rw3=uq.length*(kw2+4)-4;const kx02=(GW-rw3)/2;
+      uq.forEach((k,i)=>{const kx=kx02+i*(kw2+4),ky=kbY3;if(cx2>kx&&cx2<kx+kw2&&cy2>ky&&cy2<ky+kh2)document.dispatchEvent(new KeyboardEvent("keydown",{key:k,bubbles:true}));});
+    });}
+
+    if(mt>0){mt--;GX.fillStyle=msg.startsWith("✅")?"rgba(0,255,136,.85)":"rgba(255,110,110,.85)";GX.font="11px 'Share Tech Mono',monospace";GX.textAlign="center";GX.fillText(msg,GW/2,kbY2-12);}
+    GX.fillStyle="rgba(0,255,100,.28)";GX.font="9px 'Share Tech Mono',monospace";GX.textAlign="center";
+    GX.fillText("жми первую букву токена!",GW/2,GH-4);
+    if(score>0&&score%60===0&&lvl<6){lvl++;speed+=(lvl<4?.18:.35);setLvlPill(lvl);}
+    if(lives<=0){stopGame();document.removeEventListener("keydown",_kb);gOver(score,"Know your syntax!");}
+  }
+  gRun=true;loop();
+}
+
+/* ====================================================
+   ██████╗ DEV GAME 3 — CODE SORTER
+   Расставь строки кода в правильном порядке
+   Учишься: структура функций, if/else, циклов
+===================================================== */
+function startDEVG3(){
+  // correct order = lines array order (index 0,1,2... is the right order)
+  const challenges=[
+    {title:"Напиши функцию",hint:"Сначала объявление, потом тело, потом закрывающая скобка }",
+     lines:["function greet(name) {","  return 'Hello, ' + name;","}"],
+     tip:"✅ function greet → return → } | Функция: заголовок → тело → конец"},
+    {title:"Условие if / else",hint:"if сначала, потом его тело, потом else с телом, потом закрыть",
+     lines:["if (score > 10) {","  console.log('Winner!');","} else {","  console.log('Try again');","}"],
+     tip:"✅ if → тело → else → тело → } | Сначала условие, потом ветки"},
+    {title:"Цикл for",hint:"Сначала объявление цикла, потом тело, потом закрыть",
+     lines:["for (let i = 0; i < 5; i++) {","  console.log(i);","}"],
+     tip:"✅ for(init;cond;step) → тело → } | Цикл выполнит код 5 раз"},
+    {title:"Массив + forEach",hint:"Сначала создай массив, потом вызови forEach с функцией внутри",
+     lines:["const fruits = ['apple','banana'];","fruits.forEach(fruit => {","  console.log(fruit);","});"],
+     tip:"✅ массив → .forEach() → тело → }); | forEach проходит по каждому элементу"},
+    {title:"Async/Await функция",hint:"async объявление → fetch → .json() → return, всё по порядку",
+     lines:["async function getData() {","  const res = await fetch(url);","  const data = await res.json();","  return data;","}"],
+     tip:"✅ async fn → await fetch → await .json() → return | await ждёт результат"},
+    {title:"Создай класс",hint:"class → constructor → метод",
+     lines:["class Animal {","  constructor(name) {","    this.name = name;","  }","}"],
+     tip:"✅ class → constructor → свойство → закрыть | Класс — шаблон объекта"},
+  ];
+  let lvlIdx=0,score=0,lives=3,errCount=0;
+  sScore(0);sLives(3);setLvlPill(1);
+
+  function startChallenge(){
+    const ch=challenges[lvlIdx%challenges.length];
+    // shuffle — correctOrder is simply origIdx === position in array
+    const shuffled=[...ch.lines].map((l,i)=>({text:l,origIdx:i})).sort(()=>Math.random()-.5);
+    let placed=[],msg="",mt=0,showOk=false,showTimer=0,showHint=false;
+
+    function draw(){
+      if(!gRun)return;gAnim=requestAnimationFrame(draw);
+      if(mt>0)mt--;
+      if(showOk){showTimer++;if(showTimer>110){showOk=false;showTimer=0;startChallenge();return;}}
+      GX.clearRect(0,0,GW,GH);
+      // bg
+      const bg=GX.createLinearGradient(0,0,0,GH);bg.addColorStop(0,"#010b04");bg.addColorStop(1,"#020c06");GX.fillStyle=bg;GX.fillRect(0,0,GW,GH);
+      for(let yy=0;yy<GH;yy+=3){GX.fillStyle="rgba(0,0,0,.05)";GX.fillRect(0,yy,GW,1);}
+
+      // title
+      GX.fillStyle="#00ff88";GX.font="bold 12px 'Orbitron',monospace";GX.textAlign="center";
+      GX.shadowColor="#00ff88";GX.shadowBlur=10;
+      GX.fillText(ch.title.toUpperCase(),GW/2,20);GX.shadowBlur=0;
+      GX.fillStyle="rgba(0,255,100,.3)";GX.font="9px 'Share Tech Mono',monospace";
+      GX.fillText("Кликай строки в правильном порядке ↓",GW/2,34);
+
+      // hint box
+      if(showHint||errCount>=2){
+        rr(12,40,GW-24,28,6,"rgba(255,200,0,.08)","rgba(255,200,0,.3)");
+        GX.fillStyle="rgba(255,220,0,.7)";GX.font="9px 'Share Tech Mono',monospace";GX.textAlign="center";
+        GX.fillText("💡 "+ch.hint,GW/2,58);
+      }
+
+      const topY=(showHint||errCount>=2)?76:46;
+      const iH=30,iGap=4;
+
+      // placed area
+      const pAreaH=placed.length>0?placed.length*(iH+iGap)+12:32;
+      rr(10,topY,GW-20,pAreaH,8,"rgba(0,255,100,.05)","rgba(0,255,100,.18)");
+      GX.fillStyle="rgba(0,255,100,.25)";GX.font="8px 'Orbitron',monospace";GX.textAlign="left";
+      GX.fillText("YOUR CODE",18,topY+13);
+      placed.forEach((item,i)=>{
+        const isCorrect=showOk&&item.origIdx===i;
+        const isWrong=showOk&&item.origIdx!==i;
+        const fy=topY+18+i*(iH+iGap);
+        rr(16,fy,GW-32,iH,5,
+          isCorrect?"rgba(0,255,100,.22)":isWrong?"rgba(255,60,60,.18)":"rgba(0,255,100,.08)",
+          isCorrect?"#00ff88":isWrong?"#ff4444":"rgba(0,255,100,.3)");
+        GX.fillStyle=isCorrect?"#00ff88":isWrong?"#ff6060":"rgba(200,255,220,.75)";
+        GX.font="10px 'Share Tech Mono',monospace";GX.textAlign="left";
+        const prefix=isCorrect?"✅ ":isWrong?"❌ ":"   ";
+        GX.fillText(prefix+item.text,24,fy+iH/2+4);
+      });
+
+      // available lines
+      const avail=shuffled.filter(it=>!placed.includes(it));
+      const startAvail=topY+pAreaH+10;
+      avail.forEach((item,ii)=>{
+        const yy=startAvail+ii*(iH+8);
+        rr(14,yy,GW-28,iH,6,"rgba(255,255,255,.04)","rgba(0,255,100,.22)");
+        // hover effect (approximate — highlight top item)
+        GX.fillStyle="rgba(0,255,100,.75)";GX.font="10px 'Share Tech Mono',monospace";GX.textAlign="left";
+        GX.fillText(item.text,22,yy+iH/2+4);
+        // click hint arrow
+        GX.fillStyle="rgba(0,255,100,.3)";GX.font="10px serif";GX.textAlign="right";
+        GX.fillText("▶",GW-20,yy+iH/2+4);
+      });
+
+      // messages
+      if(showOk){
+        GX.fillStyle="rgba(0,0,0,.6)";GX.fillRect(0,GH-56,GW,56);
+        GX.fillStyle="#00ff88";GX.font="bold 11px 'Share Tech Mono',monospace";GX.textAlign="center";
+        GX.shadowColor="#00ff88";GX.shadowBlur=8;
+        GX.fillText(ch.tip,GW/2,GH-28);GX.shadowBlur=0;
+        GX.fillStyle="rgba(0,255,100,.5)";GX.font="9px 'Orbitron',monospace";
+        GX.fillText("✅ ПРАВИЛЬНО! +20 очков",GW/2,GH-10);
+      } else if(mt>0){
+        GX.fillStyle=msg.startsWith("✅")?"rgba(0,255,136,.9)":"rgba(255,110,110,.9)";
+        GX.font="bold 10px 'Share Tech Mono',monospace";GX.textAlign="center";
+        GX.fillText(msg,GW/2,GH-6);
+      }
+    }
+
+    GC.onclick=e=>{
+      if(showOk)return;
+      const r=GC.getBoundingClientRect();
+      const cy2=(e.clientY-r.top)*(GH/r.height);
+      const isHint=showHint||errCount>=2;
+      const topY2=isHint?76:46;
+      const iH2=30,iGap2=4;
+      const pAreaH2=placed.length>0?placed.length*(iH2+iGap2)+12:32;
+      const startAvail2=topY2+pAreaH2+10;
+      const avail2=shuffled.filter(it=>!placed.includes(it));
+      avail2.forEach((item,ii)=>{
+        const yy=startAvail2+ii*(iH2+8);
+        if(cy2>yy&&cy2<yy+iH2) placed.push(item);
+      });
+      if(placed.length===shuffled.length){
+        // CORRECT check: placed[i].origIdx must equal i (original array order)
+        let ok=true;
+        placed.forEach((item,i)=>{if(item.origIdx!==i)ok=false;});
+        if(ok){
+          score+=20;sScore(score);showOk=true;errCount=0;
+          lvlIdx++;setLvlPill(Math.min(lvlIdx+1,6));
+          spawnAEP();
+        } else {
+          lives--;sLives(lives);errCount++;
+          msg="❌ Не тот порядок — попробуй снова";mt=70;
+          placed=[];devGlitch();
+          if(errCount>=2) showHint=true;
+        }
+      }
+    };
+    gRun=true;draw();
+  }
+  startChallenge();
+}
+
+/* ====================================================
+   ██████╗ DEV GAME 4 — WHAT OUTPUTS?
+   Видишь код — выбери что он выведет
+   Учишься: читать и понимать код
+===================================================== */
+function startDEVG4(){
+  const puzzles=[
+    {code:"console.log(2 + 3)",opts:["5","23","undefined","Error"],c:0,tip:"2 + 3 = 5. Числа складываются."},
+    {code:'console.log("2" + 3)',opts:["5","23","undefined","Error"],c:1,tip:'"2" + 3 = "23". Строка + число = конкатенация!'},
+    {code:"let x = 5;\nx *= 2;\nconsole.log(x)",opts:["5","10","2","undefined"],c:1,tip:"x *= 2 значит x = x * 2 = 10"},
+    {code:"console.log(typeof 42)",opts:["number","int","42","string"],c:0,tip:"typeof 42 возвращает строку 'number'"},
+    {code:"console.log([1,2,3].length)",opts:["3","[1,2,3]","undefined","1"],c:0,tip:".length массива = количество элементов"},
+    {code:"console.log(10 > 5 ? 'yes' : 'no')",opts:["yes","no","true","undefined"],c:0,tip:"10 > 5 = true, тернарный оператор вернёт 'yes'"},
+    {code:"let a = [1,2,3];\na.push(4);\nconsole.log(a.length)",opts:["3","4","[1,2,3,4]","undefined"],c:1,tip:".push(4) добавляет элемент. Длина стала 4"},
+    {code:'console.log(Boolean(""))',opts:["true","false","''","undefined"],c:1,tip:"Пустая строка — falsy значение. Boolean('') = false"},
+    {code:"console.log(Math.max(1,5,3))",opts:["1","3","5","9"],c:2,tip:"Math.max() возвращает наибольшее число"},
+    {code:"const f = x => x * x;\nconsole.log(f(4))",opts:["4","8","16","undefined"],c:2,tip:"f(4) = 4 * 4 = 16. Стрелочная функция возводит в квадрат"},
+  ];
+  let idx=0,score=0,lives=3,chosen=-1,showResult=false,resTimer=0;
+  sScore(0);sLives(3);setLvlPill(1);
+
+  function next(){idx=(idx+1)%puzzles.length;chosen=-1;showResult=false;resTimer=0;}
+
+  function loop(){
+    if(!gRun)return;gAnim=requestAnimationFrame(loop);
+    if(showResult){resTimer++;if(resTimer>90){next();if(lives<=0){stopGame();gOver(score,"Read the code carefully!");}}}
+    GX.clearRect(0,0,GW,GH);GX.fillStyle="#020c06";GX.fillRect(0,0,GW,GH);
+    for(let y=0;y<GH;y+=4){GX.fillStyle="rgba(0,0,0,.07)";GX.fillRect(0,y,GW,2);}
+
+    const pz=puzzles[idx];
+    GX.fillStyle="rgba(0,255,100,.45)";GX.font="bold 11px 'Orbitron',monospace";GX.textAlign="center";
+    GX.fillText("ЧТО ВЫВЕДЕТ КОД?",GW/2,28);
+
+    // Code block
+    rr(16,42,GW-32,90,10,"rgba(0,255,100,.06)","rgba(0,255,100,.2)");
+    const lines2=pz.code.split("\n");
+    lines2.forEach((line,i)=>{
+      GX.fillStyle="#00ff88";GX.font="bold 13px 'Share Tech Mono',monospace";GX.textAlign="left";
+      GX.fillText(line,24,65+i*22);
+    });
+
+    // Options
+    const oW=(GW-48)/2,oH=52,oGap=10;
+    pz.opts.forEach((opt,i)=>{
+      const col=i%2,row=Math.floor(i/2);
+      const ox=16+col*(oW+oGap),oy=148+row*(oH+oGap);
+      let fill,stroke,textCol;
+      if(showResult){
+        if(i===pz.c){fill="rgba(0,255,100,.3)";stroke="#00ff88";textCol="#fff";}
+        else if(i===chosen&&chosen!==pz.c){fill="rgba(255,50,50,.25)";stroke="#ff3c3c";textCol="#ff9090";}
+        else{fill="rgba(255,255,255,.04)";stroke="rgba(255,255,255,.12)";textCol="rgba(255,255,255,.4)";}
+      } else if(chosen===i){fill="rgba(0,210,255,.2)";stroke="rgba(0,210,255,.6)";textCol="#60e8ff";}
+      else{fill="rgba(255,255,255,.05)";stroke="rgba(0,255,100,.22)";textCol="rgba(255,255,255,.7)";}
+      rr(ox,oy,oW,oH,10,fill,stroke);
+      GX.fillStyle=textCol;GX.font="bold 12px 'Share Tech Mono',monospace";GX.textAlign="center";
+      GX.fillText(opt,ox+oW/2,oy+oH/2+4);
+    });
+
+    if(showResult){
+      const ok=chosen===pz.c;
+      GX.fillStyle=ok?"rgba(0,255,100,.85)":"rgba(255,100,100,.85)";
+      GX.font="bold 11px 'Share Tech Mono',monospace";GX.textAlign="center";
+      GX.fillText((ok?"✅ ":"❌ ")+pz.tip,GW/2,280);
+    }
+
+    GX.fillStyle="rgba(0,255,100,.3)";GX.font="9px 'Share Tech Mono',monospace";GX.textAlign="left";
+    GX.fillText("Score: "+score,16,GH-8);
+    GX.fillStyle="rgba(0,255,100,.2)";GX.textAlign="center";
+    GX.fillText("Кликни на правильный ответ",GW/2,GH-22);
+
+    // question counter
+    GX.fillStyle="rgba(0,255,100,.35)";GX.font="10px 'Orbitron',monospace";GX.textAlign="right";
+    GX.fillText((idx+1)+"/"+puzzles.length,GW-16,GH-8);
+  }
+
+  GC.onclick=e=>{
+    if(showResult)return;
+    const r=GC.getBoundingClientRect();const cx2=(e.clientX-r.left)*(GW/r.width),cy2=(e.clientY-r.top)*(GH/r.height);
+    const pz2=puzzles[idx];const oW2=(GW-48)/2,oH2=52,oGap2=10;
+    pz2.opts.forEach((_,i)=>{
+      const col=i%2,row=Math.floor(i/2);
+      const ox=16+col*(oW2+oGap2),oy=148+row*(oH2+oGap2);
+      if(cx2>ox&&cx2<ox+oW2&&cy2>oy&&cy2<oy+oH2){
+        chosen=i;showResult=true;
+        if(i===pz2.c){score+=10;sScore(score);spawnAEP();}
+        else{lives--;sLives(lives);devGlitch();}
+      }
+    });
+  };
+  gRun=true;loop();
+}
+
+
+/* ====================================================
+   DEV GAME 5 — DEBUG QUEST 🔬
+   Найди строку с багом — кликни на неё
+   Понимаешь: реальные JS ошибки и как их исправить
+===================================================== */
+function startDEVG5(){
+  const bugs=[
+    {title:{ru:"Найди баг в функции",en:"Find the bug in the function"},
+     lines:["function add(a, b) {","  return a - b;","}", 'console.log(add(2,3)); // expected 5'],
+     bugLine:1,
+     explain:{ru:"return a - b → должно быть a + b (минус вместо плюса!)",en:"return a - b → should be a + b (minus instead of plus!)"}},
+    {title:{ru:"Что здесь не так?",en:"What's wrong here?"},
+     lines:["const name = 'Alice';","name = 'Bob'; // reassign?","console.log(name);"],
+     bugLine:1,
+     explain:{ru:"const нельзя переназначать! Используй let для изменяемых переменных",en:"Can't reassign const! Use let for mutable variables"}},
+    {title:{ru:"Ошибка в условии цикла",en:"Loop condition error"},
+     lines:["for (let i = 0; i <= 3; i++) {","  console.log(i);","}","// Got: 0 1 2 3 — Expected: 0 1 2"],
+     bugLine:0,
+     explain:{ru:"i <= 3 добавляет лишнюю итерацию (3). Нужно: i < 3",en:"i <= 3 adds extra iteration (3). Should be: i < 3"}},
+    {title:{ru:"Функция ничего не возвращает",en:"Function returns nothing"},
+     lines:["function greet(name) {","  console.log('Hi ' + name);","}","const r = greet('Ana');","console.log(r); // undefined!"],
+     bugLine:4,
+     explain:{ru:"Нет return! console.log() ≠ return. Результат → undefined",en:"No return statement! console.log() ≠ return. Result → undefined"}},
+    {title:{ru:"Async проблема",en:"Async issue"},
+     lines:["async function load() {","  const res = fetch('/api/data');","  return res.json();","}"],
+     bugLine:1,
+     explain:{ru:"Пропущен await! Нужно: const res = await fetch('/api/data')",en:"Missing await! Should be: const res = await fetch('/api/data')"}},
+    {title:{ru:"Опасное сравнение",en:"Dangerous comparison"},
+     lines:["let score = 0;","if (score = 10) {","  console.log('Winner!');","}"],
+     bugLine:1,
+     explain:{ru:"= это присвоение, нужно ==. Лучше всегда ===  (строгое равенство)",en:"= is assignment, should be ==. Better yet: always use === (strict equality)"}},
+    {title:{ru:"Индекс за пределами массива",en:"Array index out of bounds"},
+     lines:["const arr = [1, 2, 3];","console.log(arr[3]); // undefined","// Expected: last element (3)"],
+     bugLine:1,
+     explain:{ru:"arr[3] = undefined! Массивы 0-based: 0,1,2. Последний = arr[arr.length-1]",en:"arr[3] = undefined! Arrays are 0-based: 0,1,2. Last = arr[arr.length-1]"}},
+  ];
+  let tIdx=0,score=0,lives=3;
+  sScore(0);sLives(3);setLvlPill(1);
+
+  function doTask(){
+    const task=bugs[tIdx%bugs.length];
+    const LH=38,LG=5,sy=58;
+    let sel=-1,showR=false,rTimer=0,msg="",mt=0;
+
+    function draw(){
+      if(!gRun)return;gAnim=requestAnimationFrame(draw);if(mt>0)mt--;
+      if(showR){rTimer++;if(rTimer>120){showR=false;rTimer=0;tIdx++;setLvlPill(Math.min(tIdx+1,6));doTask();return;}}
+      GX.clearRect(0,0,GW,GH);
+      const gbg=GX.createLinearGradient(0,0,0,GH);gbg.addColorStop(0,"#020c06");gbg.addColorStop(1,"#010a04");GX.fillStyle=gbg;GX.fillRect(0,0,GW,GH);
+      for(let yy=0;yy<GH;yy+=3){GX.fillStyle="rgba(0,0,0,.04)";GX.fillRect(0,yy,GW,1);}
+
+      const title=task.title[lang]||task.title.ru;
+      GX.fillStyle="#00ff88";GX.font="bold 11px 'Orbitron',monospace";GX.textAlign="center";
+      GX.shadowColor="#00ff88";GX.shadowBlur=8;GX.fillText("🐛 "+title.toUpperCase(),GW/2,18);GX.shadowBlur=0;
+      GX.fillStyle="rgba(0,255,100,.3)";GX.font="9px 'Share Tech Mono',monospace";
+      GX.fillText(lang==="ru"?"Кликни на строку с багом:":"Click the line containing the bug:",GW/2,33);
+      GX.fillStyle="rgba(0,255,100,.12)";GX.fillRect(8,40,GW-16,1);
+
+      task.lines.forEach((line,i)=>{
+        const y=sy+i*(LH+LG);
+        const isBug=i===task.bugLine;
+        const isSel=sel===i;
+        const isCor=showR&&isBug;
+        const isWr=showR&&isSel&&!isBug;
+        rr(12,y,GW-24,LH,6,
+          isCor?"rgba(255,60,60,.18)":isWr?"rgba(255,60,60,.1)":isSel?"rgba(0,255,100,.07)":"rgba(0,255,100,.03)",
+          isCor?"#ff4444":isWr?"#ff6060":isSel?"rgba(0,255,100,.4)":"rgba(0,255,100,.1)",
+          isSel||showR?1.5:1);
+        GX.fillStyle="rgba(0,255,100,.22)";GX.font="9px 'Share Tech Mono',monospace";GX.textAlign="left";
+        GX.fillText(String(i+1).padStart(2," ")+"|",16,y+LH/2+4);
+        GX.fillStyle=isCor?"#ff6060":isSel?"#c8ffe0":"rgba(180,255,200,.78)";
+        GX.font="10px 'Share Tech Mono',monospace";
+        GX.fillText(line,44,y+LH/2+4);
+        if(showR&&isBug){
+          GX.fillStyle="#ff4444";GX.font="bold 9px 'Share Tech Mono',monospace";GX.textAlign="right";
+          GX.shadowColor="#ff0000";GX.shadowBlur=5;GX.fillText("← 🐛 BUG",GW-14,y+LH/2+4);GX.shadowBlur=0;
+        }
+      });
+
+      if(showR){
+        GX.fillStyle="rgba(0,0,0,.65)";GX.fillRect(0,GH-64,GW,64);
+        const exTxt=task.explain[lang]||task.explain.ru;
+        GX.fillStyle="#00ff88";GX.font="10px 'Share Tech Mono',monospace";GX.textAlign="center";
+        GX.shadowColor="#00ff88";GX.shadowBlur=5;GX.fillText(exTxt,GW/2,GH-38);GX.shadowBlur=0;
+        GX.fillStyle="rgba(0,255,100,.6)";GX.font="10px 'Orbitron',monospace";
+        GX.fillText(lang==="ru"?"✅ БАГ НАЙДЕН! +20":"✅ BUG FOUND! +20",GW/2,GH-18);
+      }
+      if(mt>0&&!showR){GX.fillStyle="rgba(255,110,110,.9)";GX.font="10px 'Share Tech Mono',monospace";GX.textAlign="center";GX.fillText(msg,GW/2,GH-8);}
+    }
+
+    GC.onclick=e=>{
+      if(showR)return;
+      const r2=GC.getBoundingClientRect();const cy2=(e.clientY-r2.top)*(GH/r2.height);
+      task.lines.forEach((_,ii)=>{
+        const y=sy+ii*(LH+LG);
+        if(cy2>y&&cy2<y+LH){
+          sel=ii;
+          if(ii===task.bugLine){score+=20;sScore(score);showR=true;}
+          else{lives--;sLives(lives);msg=lang==="ru"?"❌ Не здесь — ищи внимательнее":"❌ Not here — look more carefully";mt=70;devGlitch();}
+          if(lives<=0){stopGame();gOver(score,lang==="ru"?"Учи JS ошибки!":"Study JS errors!");}
+        }
+      });
+    };
+    gRun=true;draw();
+  }
+  doTask();
+}
+
+/* ===================================================
+   ABOUT MODAL
+=================================================== */
+</script>
+
+</body>
+</html>
