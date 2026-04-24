@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DEV//ESCAPE — Puzzels</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="scanlines"></div>
+
+  <div class="page-wrap">
+    <p class="page-header">DEV//ESCAPE</p>
+    <p class="page-sub">> Los alle 4 puzzels op om de code te krijgen</p>
+
+    <div class="progress-bar">
+      <div class="progress-step active" id="step-1"></div>
+      <div class="progress-step" id="step-2"></div>
+      <div class="progress-step" id="step-3"></div>
+      <div class="progress-step" id="step-4"></div>
+    </div>
+
+    <!-- PUZZEL 1: Binair -->
+    <div class="puzzle-card active" id="card-1">
+      <p class="puzzle-num">PUZZEL 01 / 04</p>
+      <p class="puzzle-title">BINARY DECODER</p>
+      <p class="puzzle-content">
+        In de computer wereld wordt alles opgeslagen als 0 en 1.<br>
+        Vertaal dit binaire getal naar decimaal:
+      </p>
+      <div class="code-block">
+        <span class="cm"># Binair getal:</span><br>
+        <span class="num">0111</span>
+      </div>
+      <p class="puzzle-content">Wat is de decimale waarde?</p>
+      <div class="answer-row">
+        <input class="answer-input" id="ans1" type="number" maxlength="2" placeholder="?">
+        <button class="btn" onclick="check(1, 7)">SUBMIT</button>
+      </div>
+      <p class="feedback" id="fb1"></p>
+      <button class="hint-btn" onclick="toggleHint(1)">[ hint tonen ]</button>
+      <p class="hint-text" id="hint1">0×8 + 1×4 + 1×2 + 1×1 = ?</p>
+    </div>
+
+    <!-- PUZZEL 2: Bug zoeken -->
+    <div class="puzzle-card" id="card-2">
+      <p class="puzzle-num">PUZZEL 02 / 04</p>
+      <p class="puzzle-title">BUG HUNTER</p>
+      <p class="puzzle-content">
+        Er zit een bug in deze Python code!<br>
+        Op welke <strong style="color:var(--yellow)">regelnummer</strong> staat de fout?
+      </p>
+      <div class="code-block">
+<span class="cm"># Bereken gemiddelde van een lijst</span>
+<span class="kw">def</span> <span class="fn">gemiddelde</span>(lijst):
+    totaal = <span class="num">0</span>
+    <span class="kw">for</span> getal <span class="kw">in</span> lijst:
+        totaal = totaal - getal
+    <span class="kw">return</span> totaal / len(lijst)
+
+result = <span class="fn">gemiddelde</span>([<span class="num">10</span>, <span class="num">20</span>, <span class="num">30</span>])
+<span class="fn">print</span>(result)
+      </div>
+      <p class="puzzle-content">Op welke regel staat de bug? (tel vanaf regel 1)</p>
+      <div class="answer-row">
+        <input class="answer-input" id="ans2" type="number" placeholder="?">
+        <button class="btn" onclick="check(2, 5)">SUBMIT</button>
+      </div>
+      <p class="feedback" id="fb2"></p>
+      <button class="hint-btn" onclick="toggleHint(2)">[ hint tonen ]</button>
+      <p class="hint-text" id="hint2">Kijk naar de berekening van totaal. Optellen of aftrekken?</p>
+    </div>
+
+    <!-- PUZZEL 3: Hoeveel bits -->
+    <div class="puzzle-card" id="card-3">
+      <p class="puzzle-num">PUZZEL 03 / 04</p>
+      <p class="puzzle-title">DATA TYPES</p>
+      <p class="puzzle-content">
+        Een developer moet data types kennen.<br>
+        Bekijk dit JavaScript object:
+      </p>
+      <div class="code-block">
+<span class="kw">const</span> developer = {
+  naam: <span class="str">"Lisa"</span>,
+  leeftijd: <span class="num">17</span>,
+  skills: [<span class="str">"HTML"</span>, <span class="str">"CSS"</span>, <span class="str">"JS"</span>],
+  actief: <span class="kw">true</span>
+};
+
+<span class="fn">console</span>.log(developer.skills.length);
+      </div>
+      <p class="puzzle-content">Wat print <code style="color:var(--green)">console.log</code> uit?</p>
+      <div class="answer-row">
+        <input class="answer-input" id="ans3" type="number" placeholder="?">
+        <button class="btn" onclick="check(3, 3)">SUBMIT</button>
+      </div>
+      <p class="feedback" id="fb3"></p>
+      <button class="hint-btn" onclick="toggleHint(3)">[ hint tonen ]</button>
+      <p class="hint-text" id="hint3">Hoeveel items zitten er in de skills array?</p>
+    </div>
+
+    <!-- PUZZEL 4: Output voorspellen -->
+    <div class="puzzle-card" id="card-4">
+      <p class="puzzle-num">PUZZEL 04 / 04</p>
+      <p class="puzzle-title">CODE TRACE</p>
+      <p class="puzzle-content">
+        Volg de code stap voor stap.<br>
+        Wat is de uiteindelijke waarde van <code style="color:var(--green)">x</code>?
+      </p>
+      <div class="code-block">
+<span class="kw">let</span> x = <span class="num">2</span>;
+x = x + <span class="num">2</span>;
+x = x - <span class="num">2</span>;
+
+<span class="fn">console</span>.log(x);
+      </div>
+      <p class="puzzle-content">Wat is de output?</p>
+      <div class="answer-row">
+        <input class="answer-input" id="ans4" type="number" placeholder="?">
+        <button class="btn" onclick="check(4, 2)">SUBMIT</button>
+      </div>
+      <p class="feedback" id="fb4"></p>
+      <button class="hint-btn" onclick="toggleHint(4)">[ hint tonen ]</button>
+      <p class="hint-text" id="hint4">Begin met 2, tel 2 op, trek 2 af. Het antwoord is 2.</p>
+    </div>
+
+    <a href="index.html" class="nav-link\">&lt; terug naar start</a>
+  </div>
+
+  <script src="puzzels.js"></script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DEV//ESCAPE — Codeslot</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="scanlines"></div>
+
+  <div class="lock-wrap">
+    <div class="lock-shell">
+      <div class="lock-shackle"></div>
+      <div class="lock-body">
+        <div class="lock-eyes"></div>
+        <div class="lock-keyhole"></div>
+      </div>
+    </div>
+
+    <p class="lock-title">CODESLOT</p>
+    <p class="lock-sub">> Voer de 4-cijferige code in om toegang te krijgen</p>
+
+    <div class="code-inputs">
+      <input class="code-digit" id="d1" type="number" min="0" max="9" maxlength="1" placeholder="?">
+      <input class="code-digit" id="d2" type="number" min="0" max="9" maxlength="1" placeholder="?">
+      <input class="code-digit" id="d3" type="number" min="0" max="9" maxlength="1" placeholder="?">
+      <input class="code-digit" id="d4" type="number" min="0" max="9" maxlength="1" placeholder="?">
+    </div>
+
+    <button class="lock-btn" onclick="checkCode()">UNLOCK</button>
+
+    <div class="lock-result" id="result-granted">
+      <p class="result-title">ACCESS GRANTED</p>
+      <p>✓ Welkom, developer!</p>
+      <p class="result-note">Je hebt de code correct ingevoerd. De kluis is ontgrendeld.</p>
+    </div>
+
+    <div class="lock-result" id="result-denied">
+      <p class="result-title">ACCESS DENIED</p>
+      <p>✗ Verkeerde code. Je wordt teruggestuurd naar het begin.</p>
+    </div>
+
+    <a href="puzzels.html" class="nav-link">&lt; terug naar puzzels</a>
+  </div>
+
+  <script src="codelock.js"></script>
+</body>
+</html>
+
