@@ -9,7 +9,7 @@ WOORDENLIJST = [
     "fiets", "groen", "hamer", "Japan", "kamer",
     "lemon", "mango", "nacht", "piano", "regen",
     "stoel", "tafel", "vogel", "water", "zebre",
-    "baron", "cirkel", "droom", "eland", "fakkel",
+    "baron", "cirkel", "droom", "kapot", "fakkel",
     "giraf", "haven", "inkt", "jurk", "kabel"
 ]
  
@@ -324,4 +324,184 @@ def toon_spelstatus(spel):
     print("  " + wit_tekst("━" * 40))
  
  
+ #  RAADLUS — één ronde (max 5 pogingen)
+
+def raad_woord_ronde(woord, team_naam):
+    pogingen = 0
+    geraden = False
+    bevestigd = [None] * len(woord)  # onthoudt groene letters
+    bevestigd[0] = woord[0]  # eerste letter is altijd bekend
+    print(f"\n  Woord heeft " + geel_tekst(str(len(woord))) + " letters.")
+    print(f"  Eerste letter: " + groen(woord[0].upper()))
+
+    # ── ZOLANG pogingen < 5 EN woord niet geraden ──
+    while pogingen < 5 and not geraden:
  
+        print(f"\n  " + blauw_tekst(f"── Poging {pogingen + 1} van 5 ──"))
+ 
+        # Bevestigde letters tonen (FIX 1 flowchart)
+        if pogingen > 0:
+            toon_bevestigde_letters(bevestigd)
+ 
+        # Invoer
+        raadwoord = input(f"\n  {team_naam} → voer woord in: ").lower().strip()
+ 
+        # Invoer geldig?
+        if not invoer_is_geldig(raadwoord, woord, bevestigd):
+            continue   # GA TERUG — poging telt niet mee
+ 
+        # Woord geraden?
+        if raadwoord == woord:
+            geraden = True
+            toon_resultaat(raadwoord, ["groen"] * len(woord))
+            print("\n  " + Back.GREEN + Fore.WHITE + Style.BRIGHT +
+                  f"  CORRECT! Het woord was {woord.upper()}!  " + Style.RESET_ALL)
+        else:
+            # Controleer letters groen / geel / grijs
+            resultaat = controleer_letters(raadwoord, woord)
+            toon_resultaat(raadwoord, resultaat)
+ 
+            # Bevestigde letters opslaan voor volgende poging
+            vul_bevestigde_letters_in(bevestigd, raadwoord, resultaat)
+            pogingen += 1
+ 
+    # ── EINDE ZOLANG ──
+    return geraden
+
+#  WIN / VERLIES CONTROLE
+
+def controleer_winst(spel):
+    if spel["groene_ballen"] >= 3:
+        return True, "3 groene ballen getrokken!"
+    if heeft_lijn(spel["bingo_kaart"]):
+        return True, "Lijn op de bingo-kaart!"
+    if spel["woorden_goed"] >= 10:
+        return True, "10 woorden goed geraden!"
+    return False, ""   
+
+def controleer_verlies(spel):
+    if spel["rode_ballen"] >= 3:
+        return True, "3 rode ballen getrokken!"
+    if spel["fouten_op_rij"] >= 3:
+        return True, "3 woorden op rij fout geraden!"
+    return False, ""
+
+#  INITIALISEER SPEL
+
+def initialiseer_spel(naam1, naam2):
+    # Reset alles naar 0 — nieuw spel
+    return {
+        "scores":        {1: 0, 2: 0},
+        "bingo_kaart":   maak_bingo_kaart(),
+        "ballenbak":     maak_ballenbak(),
+        "rode_ballen":   0,
+        "groene_ballen": 0,
+        "woorden_goed":  0,
+        "fouten_op_rij": 0,
+        "huidig_team":   1,
+        "team1_naam":    naam1,
+        "team2_naam":    naam2,
+    }
+ # HOOFD SPELLOOP
+def speel():
+    # hoofdfunctie die het spel aanstuurt
+    # start 
+    print("\n" + Back.BLUE + Fore.WHITE + Style.BRIGHT +
+          "                                        " + Style.RESET_ALL)
+    print(Back.BLUE + Fore.WHITE + Style.BRIGHT +
+          "   W E L K O M   B I J   L I N G O !    " + Style.RESET_ALL)
+    print(Back.BLUE + Fore.WHITE + Style.BRIGHT +
+          "                                        " + Style.RESET_ALL)
+# invoer namen 
+    print()
+    team1_naam = input("  Team 1 naam: ").strip() or "Team 1"
+    team2_naam = input("  Team 2 naam: ").strip() or "Team 2"
+    opnieuw_spelen = True
+
+    # HERHAAL SPELEN
+    while opnieuw_spelen:
+        spel = initialiseer_spel(team1_naam, team2_naam)    
+        spel_voorbij = False
+        # rondes   
+        while not spel_voorbij:
+            # Kies willekeurig woord
+            woord = random.choice(WOORDENLIJST)
+            t = spel["huidig_team"]
+            naam = spel["team1_naam"] if t == 1 else spel["team2_naam"]
+            # Toon spelstatus + bingo-kaart
+            toon_spelstatus(spel)
+            toon_bingo_kaart(spel["bingo_kaart"])
+
+            # raadlus
+            geraden = raad_woord_ronde(woord, naam)
+
+            #  na de raadlus 
+            if geraden: 
+                spel["woorden_goed"] += 1
+                spel["fouten_op_rij"] = 0
+                spel["scores"][t] += 1
+
+                spel["rode_ballen"], spel["groene_ballen"] = speel_ballenbak(
+                    spel["ballenbak"],
+                    spel["bingo_kaart"],
+                    spel["rode_ballen"],
+                    spel["groene_ballen"]
+                )
+            else:
+                spel["fouten_op_rij"] += 1  
+                print("\n  " + Back.RED + Fore.WHITE + Style.BRIGHT + f"  Niet geraden. Het woord was: {woord.upper()}  " + Style.RESET_ALL)
+                # Winconditie 
+                gewonnen, reden = controleer_winst(spel)
+
+                if gewonnen:
+                    print("\n  " + Back.GREEN + Fore.WHITE + Style.BRIGHT + f" {naam} WINT! {reden}  " + Style.RESET_ALL)
+                spel_voorbij = True
+                continue
+
+            # Verliesconditie 
+            verloren, reden = controleer_verlies(spel)
+            if verloren:
+                print("\n  " + Back.RED + Fore.WHITE + Style.BRIGHT + f" {naam} VERLIEST! {reden}  " + Style.RESET_ALL)
+                spel_voorbij = True
+                continue
+            # Wissel van team
+            spel["huidig_team"] = 2 if t == 1 else 1
+            input("\n  Druk op Enter om door te gaan...")
+            # Eindstand
+        print("\n  " + wit_tekst("━" * 40))
+        print("  " + wit_tekst("  EINDSTAND"))
+        print("  " + wit_tekst("━" * 40))
+        s = spel["scores"]
+        print(f"  {groen_tekst(spel['team1_naam'])}: {s[1]} punten")
+        print(f"  {blauw_tekst(spel['team2_naam'])}: {s[2]} punten")
+        if s[1] > s[2]:
+            print("\n  " + Back.GREEN + Fore.WHITE + Style.BRIGHT +
+                  f" Winnaar: {spel['team1_naam']}!  " + Style.RESET_ALL)
+        elif s[2] > s[1]:
+            print("\n  " + Back.GREEN + Fore.WHITE + Style.BRIGHT +
+                  f" Winnaar: {spel['team2_naam']}!  " + Style.RESET_ALL)
+        else:
+            print("\n  " + geel_tekst(" Gelijkspel!"))
+
+        #pnieuw spelen
+        print()
+        antwoord = input("  Nog een spel spelen? (j/n): ").lower().strip()
+        opnieuw_spelen = antwoord in ["ja", "j"]
+        # EINDE 
+        print("\n " + blauw_tekst("Bedankt voor het spelen! Tot ziens!"))
+        print()
+
+if __name__ == "__main__":
+    speel()
+  
+
+
+    
+
+
+
+    
+
+
+
+
