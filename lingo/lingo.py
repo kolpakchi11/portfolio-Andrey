@@ -5,12 +5,12 @@ init(autoreset=True)
 
  
 WOORDENLIJST = [
-    "appel", "brood", "chaos", "draak", "engel",
-    "fiets", "groen", "hamer", "Japan", "kamer",
-    "lemon", "mango", "nacht", "piano", "regen",
-    "stoel", "tafel", "vogel", "water", "zebre",
-    "baron", "cirkel", "droom", "kapot", "fakkel",
-    "giraf", "haven", "inkt", "jurk", "kabel"
+    "mysql", "brood", "chaos", "draak", "java",
+    "fatbike", "groen", "hamer", "Japan", "kamer",
+    "lemon", "mango", "nacht", "rekenen", "robots",
+    "ai", "google", "github", "water", "google",
+    "programming", "cirkel", "stroom", "kapot", "fakkel",
+    "debug", "design", "website", "wifi", "kabel"
 ]
  
 
