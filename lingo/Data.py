@@ -6,4 +6,3 @@ WOORDENLIJST = [
     "programming", "cirkel", "stroom", "kapot", "fakkel",
     "debug", "design", "website", "wifi", "kabel",
 ]
- 
