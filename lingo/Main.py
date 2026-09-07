@@ -20,7 +20,7 @@ from Functies import (
 #  HOOFD SPELLOOP
  
 def speel():
-    # ── start + Print welkomstbericht ──
+    #  start + Print welkomstbericht 
     print("\n" + Back.BLUE + Fore.WHITE + Style.BRIGHT +
           "                                        " + Style.RESET_ALL)
     print(Back.BLUE + Fore.WHITE + Style.BRIGHT +
@@ -28,19 +28,19 @@ def speel():
     print(Back.BLUE + Fore.WHITE + Style.BRIGHT +
           "                                        " + Style.RESET_ALL)
  
-    # ── Input: namen team 1 en team 2 ──
+    # Input: namen team 1 en team 2
     print()
     team1_naam = input("  Team 1 naam: ").strip() or "Team 1"
     team2_naam = input("  Team 2 naam: ").strip() or "Team 2"
     opnieuw_spelen = True
  
-    # ── HERHAAL SPELEN (opnieuw spelen? ja -> Initialiseer spel) ──
+    #  HERHAAL SPELEN (opnieuw spelen? ja -> Initialiseer spel) 
     while opnieuw_spelen:
         # Initialiseer spel (scores, bingo, tellers)
         spel = initialiseer_spel(team1_naam, team2_naam)
         spel_voorbij = False
  
-        # ── RONDES ──
+        #  RONDES 
         while not spel_voorbij:
             # Kies willekeurig woord uit lijst
             woord = random.choice(WOORDENLIJST)
@@ -51,11 +51,11 @@ def speel():
             toon_spelstatus(spel)
             toon_bingo_kaart(spel["bingo_kaart"])
  
-            # Raadlus: print eerste letter -> invoer -> controleer letters ->
+            # Raadlus: print eerste letter -> invoer -> controleer letters
             #          woord geraden? (max 5 pogingen)
             geraden = raad_woord_ronde(woord, naam)
  
-            # ── na de raadlus: beide takken komen samen bij de controles ──
+            #  na de raadlus: beide takken komen samen bij de controles 
             if geraden:
                 # woord geraden? -> JA
                 # wordteller +1, foutteller = 0, score +1
@@ -78,7 +78,7 @@ def speel():
                 # Foutteller + 1 (pogingen worden elke ronde opnieuw op 0 gezet)
                 spel["fouten_op_rij"] += 1
  
-            # ── Winconditie: 3 groen / lijn / 10 woorden?  (na ELKE ronde) ──
+            #Winconditie: 3 groen / lijn / 10 woorden?  (na ELKE ronde)
             gewonnen, reden = controleer_winst(spel)
             if gewonnen:
                 print("\n  " + Back.GREEN + Fore.WHITE + Style.BRIGHT +
@@ -86,7 +86,7 @@ def speel():
                 spel_voorbij = True
                 continue
  
-            # ── Verliesconditie: 3 rood / 3 fouten op rij? ──
+            # Verliesconditie: 3 rood / 3 fouten op rij? 
             verloren, reden = controleer_verlies(spel)
             if verloren:
                 print("\n  " + Back.RED + Fore.WHITE + Style.BRIGHT +
@@ -94,11 +94,11 @@ def speel():
                 spel_voorbij = True
                 continue
  
-            # ── Wissel van team (1 - 2) en ga door ──
+            # Wissel van team (1 - 2) en ga door 
             spel["huidig_team"] = 2 if t == 1 else 1
             input("\n  Druk op Enter om door te gaan...")
  
-        # ── Print: winnend team en eindstand ──
+        # Print: winnend team en eindstand 
         print("\n  " + wit_tekst("━" * 40))
         print("  " + wit_tekst("  EINDSTAND"))
         print("  " + wit_tekst("━" * 40))
@@ -114,12 +114,20 @@ def speel():
         else:
             print("\n  " + geel_tekst(" Gelijkspel!"))
  
-        # ── opnieuw spelen? ──
-        print()
-        antwoord = input("  Nog een spel spelen? (j/n): ").lower().strip()
-        opnieuw_spelen = antwoord in ["ja", "j"]
+        # opnieuw spelen? 
+        while True:
+            antwoord = input("Nog een spel spelen? (j/n): ").lower().strip()
+
+            if antwoord in ["j", "ja"]:
+                opnieuw_spelen = True
+                break
+            elif antwoord in ["n", "nee"]:
+                opnieuw_spelen = False
+                break
+            else:
+                print("Ongeldige invoer. Kies j of n.")
  
-    # ── Print: "Bedankt voor het spelen!" -> end ──
+    # Print: "Bedankt voor het spelen!" -> end ──
     print("\n " + blauw_tekst("Bedankt voor het spelen! Tot ziens!"))
     print()
  
